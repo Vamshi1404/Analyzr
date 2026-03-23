@@ -1,16 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Sparkles, Command, Shield, Database } from 'lucide-react';
+import { Zap, Database, CheckCircle2, Loader } from 'lucide-react';
+import { Card } from './ui/Card';
 
 interface Props {
     phase: 'uploading' | 'analyzing' | 'done';
 }
-
-const PHASES = [
-    { id: 'uploading', label: 'Ingestion', icon: Command, desc: 'Establishing secure data stream' },
-    { id: 'analyzing', label: 'Processing', icon: Database, desc: 'Executing analytical heuristics' },
-    { id: 'ai', label: 'Insight Synthesis', icon: Sparkles, desc: 'Activating Leela engine' },
-    { id: 'ready', label: 'System Ready', icon: Shield, desc: 'Diagnostic report complete' }
-];
 
 export default function LoadingScreen({ phase }: Props) {
     const [progress, setProgress] = useState(0);
@@ -22,15 +16,14 @@ export default function LoadingScreen({ phase }: Props) {
     }, []);
 
     useEffect(() => {
-        // Simulated progress within phases
         const interval = setInterval(() => {
             setProgress(prev => {
-                if (phase === 'uploading') return Math.min(25, prev + 0.5);
-                if (phase === 'analyzing') return Math.min(75, prev + 0.3);
-                if (phase === 'done') return Math.min(99, prev + 0.8);
+                if (phase === 'uploading') return Math.min(35, prev + 1);
+                if (phase === 'analyzing') return Math.min(85, prev + 0.6);
+                if (phase === 'done') return 100;
                 return prev;
             });
-        }, 100);
+        }, 80);
         return () => clearInterval(interval);
     }, [phase]);
 
@@ -40,64 +33,81 @@ export default function LoadingScreen({ phase }: Props) {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const messages = {
+        uploading: { title: 'Uploading', desc: 'Securing your data', color: '#8b5cf6' },
+        analyzing: { title: 'Analyzing', desc: 'Processing intelligence', color: '#1e293b' },
+        done: { title: 'Complete!', desc: 'Your insights await', color: '#10b981' }
+    };
+
+    const msg = messages[phase];
+
     return (
-        <div className="w-full flex flex-col items-center justify-center space-y-24 py-24 animate-fade-in">
-            {/* Visual Center - Pulsing Gold Orb / Hub */}
-            <div className="relative">
-                <div className="w-48 h-48 rounded-full border border-accent/20 flex items-center justify-center relative">
-                    <div className="absolute inset-0 rounded-full border-2 border-accent/10 animate-pulse-gold" />
-                    <div className="absolute inset-4 rounded-full border border-accent/20 animate-spin-slow" style={{ animationDuration: '10s' }} />
-                    <div className="w-4 h-4 bg-accent shadow-[0_0_30px_#C5A059] relative z-10" />
-                </div>
-                {/* Orbital Labels around the hub */}
-                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 text-center">
-                    <h4 className="opacity-100">System Processing</h4>
-                </div>
-                <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.4em] text-accent">
-                    {formatTime(seconds)} <span className="opacity-30">/</span> {Math.floor(progress)}%
-                </div>
-            </div>
+        <div className="w-full min-h-screen flex items-center justify-center px-4 py-14">
+            <Card className="w-full max-w-lg rounded-3xl p-6" tone="default">
+                <div className="flex items-start gap-4">
+                    <div
+                        className="w-11 h-11 rounded-2xl border flex items-center justify-center"
+                        style={{
+                            backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                            borderColor: 'rgba(139, 92, 246, 0.28)'
+                        }}
+                    >
+                        {phase === 'uploading' && <Zap size={20} style={{ color: msg.color }} />}
+                        {phase === 'analyzing' && <Loader size={20} style={{ color: msg.color }} />}
+                        {phase === 'done' && <CheckCircle2 size={20} style={{ color: '#10b981' }} />}
+                    </div>
 
-            {/* Phase Architecture */}
-            <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-4 gap-px bg-border border border-border">
-                {PHASES.map((p, idx) => {
-                    const isCurrent = (p.id === phase) || (phase === 'done' && p.id === 'ai');
-                    const isPast = (phase === 'analyzing' && p.id === 'uploading') || (phase === 'done' && (p.id === 'uploading' || p.id === 'analyzing'));
-                    const isSystemReady = phase === 'done' && p.id === 'ready';
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-display font-bold text-slate-100">{msg.title}</h1>
+                        <p className="text-sm text-slate-400 mt-1">{msg.desc}</p>
+                    </div>
+                </div>
 
-                    return (
-                        <div key={idx} className={`p-10 transition-all duration-700 ${isCurrent ? 'bg-white' : 'bg-secondary/50'}`}>
-                            <div className="flex items-center justify-between mb-8">
-                                <p className={`text-[9px] font-black tracking-[0.4em] uppercase ${isCurrent || isPast ? 'text-accent' : 'text-muted opacity-30'}`}>
-                                    Step 0{idx + 1}
-                                </p>
-                                <p className="text-[9px] font-mono text-muted opacity-30">{p.id.toUpperCase()}</p>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <p className={`text-xl font-black uppercase tracking-tighter ${isCurrent || isPast || isSystemReady ? 'text-black' : 'text-muted opacity-20'}`}>
-                                        {p.label}
-                                    </p>
-                                    {(isPast || isSystemReady) && <div className="w-1.5 h-1.5 bg-accent" />}
-                                </div>
-                                <p className={`text-[10px] font-black uppercase tracking-widest leading-relaxed ${isCurrent ? 'text-secondary' : 'text-muted opacity-30'}`}>
-                                    {p.desc}
-                                </p>
-                            </div>
-                            {isCurrent && (
-                                <div className="mt-8 h-0.5 bg-border overflow-hidden">
-                                    <div className="h-full bg-accent animate-shimmer" style={{ width: '60%' }} />
-                                </div>
-                            )}
+                <div className="mt-6 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Progress</span>
+                        <span className="text-sm font-bold text-slate-200" style={{ color: msg.color }}>
+                            {Math.round(progress)}%
+                        </span>
+                    </div>
+                    <div className="h-3 bg-slate-800 border border-slate-700 rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-[width] duration-300"
+                            style={{
+                                width: `${progress}%`,
+                                background: `linear-gradient(90deg, ${msg.color}, rgba(30,41,59,0.2))`
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Time elapsed</span>
+                        <span className="text-sm font-mono text-slate-200" style={{ color: msg.color }}>
+                            {formatTime(seconds)}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-3 gap-2">
+                    {[
+                        { label: 'Upload', active: phase === 'uploading' || phase === 'analyzing' || phase === 'done', Icon: Zap },
+                        { label: 'Process', active: phase === 'analyzing' || phase === 'done', Icon: Database },
+                        { label: 'Done', active: phase === 'done', Icon: CheckCircle2 }
+                    ].map(({ label, active, Icon }, idx) => (
+                        <div
+                            key={idx}
+                            className="flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-semibold"
+                            style={{
+                                backgroundColor: active ? 'rgba(139, 92, 246, 0.10)' : 'rgba(2, 6, 23, 0.2)',
+                                borderColor: active ? 'rgba(139, 92, 246, 0.28)' : 'rgba(71, 85, 105, 0.55)'
+                            }}
+                        >
+                            <Icon size={14} style={{ color: active ? msg.color : '#64748b' }} />
+                            {label}
                         </div>
-                    );
-                })}
-            </div>
-
-            {/* Professional Disclaimer */}
-            <div className="text-center space-y-4 opacity-30">
-                <p className="text-[10px] font-black uppercase tracking-[0.6em]">Diagnostic Infrastructure Protocol // Analyzr Engine</p>
-            </div>
+                    ))}
+                </div>
+            </Card>
         </div>
     );
 }

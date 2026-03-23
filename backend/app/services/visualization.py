@@ -60,96 +60,102 @@ def generate_visualizations(
         plt.close(fig)
         return img_name
 
-    # ── 1. Histograms (Slate) ─────────────────────────────────────────
-    for col in numeric_cols[:2]:
+    # ── 1. Histograms (All Numeric) ──────────────────────────────────
+    for col in numeric_cols[:8]:  # Increased limit
         series = df[col].dropna()
         if len(series) < 5: continue
-        fig, ax = plt.subplots(figsize=(7, 4))
-        sns.histplot(series, bins=30, color="#4f46e5", alpha=0.9, ax=ax, kde=True, edgecolor="#ffffff", linewidth=1)
-        ax.set_title(f"Distribution: {col}", fontsize=11, fontweight="bold")
+        fig, ax = plt.subplots(figsize=(8, 4.5))
+        sns.histplot(series, bins=30, color="#6366f1", alpha=0.8, ax=ax, kde=True, edgecolor="#ffffff")
+        ax.set_title(f"Distribution: {col}", fontsize=12, fontweight="900", pad=20)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
         img_name = _save(fig, f"hist_{col[:15]}")
         charts.append(ChartMetadata(
             chart_id=uuid.uuid4().hex, dataset=filename, plot_type="histogram",
-            title=f"Distribution: {col}", x_axis=col, y_axis="Frequency",
-            trend_direction=_trend_direction(series), statistical_significance="Univariate Distribution",
-            key_observations=[f"Average: {round(float(series.mean()), 2)}"],
+            title=f"Distribution Analysis: {col}", x_axis=col, y_axis="Frequency",
+            trend_direction=_trend_direction(series), statistical_significance="Univariate Analysis",
+            key_observations=[f"Concentration around {round(float(series.median()), 2)}.", f"Standard Deviation: {round(float(series.std()), 2)}"],
             image_url=f"/static/{session_dir.name}/{img_name}",
         ))
 
-    # ── 2. Box Plot by Category (Grayscale) ────────────────────────
+    # ── 2. Box Plots (Multiple Pairs) ──────────────────────────────
     if numeric_cols and cat_cols:
-        num, cat = numeric_cols[0], cat_cols[0]
-        top_cats = df[cat].value_counts().head(6).index
-        mask = df[cat].isin(top_cats)
-        fig, ax = plt.subplots(figsize=(8, 5))
-        sns.boxplot(data=df[mask], x=cat, y=num, palette=VIBRANT_PALETTE, ax=ax, showfliers=False, width=0.6)
-        sns.stripplot(data=df[mask], x=cat, y=num, color="#000000", alpha=0.3, size=3, ax=ax)
-        ax.set_title(f"{num} by {cat}", fontsize=11, fontweight="bold")
-        ax.tick_params(axis="x", rotation=0)
-        img_name = _save(fig, f"boxcat_{cat[:10]}")
+        for idx in range(min(len(cat_cols), 3)):
+            cat = cat_cols[idx]
+            num = numeric_cols[idx % len(numeric_cols)]
+            top_cats = df[cat].value_counts().head(5).index
+            mask = df[cat].isin(top_cats)
+            if df[mask].empty: continue
+
+            fig, ax = plt.subplots(figsize=(9, 5.5))
+            sns.boxplot(data=df[mask], x=cat, y=num, palette=VIBRANT_PALETTE, ax=ax, showfliers=False, width=0.5)
+            sns.stripplot(data=df[mask], x=cat, y=num, color="#0f172a", alpha=0.2, size=3, ax=ax)
+            ax.set_title(f"Variance: {num} by {cat}", fontsize=12, fontweight="900", pad=20)
+            ax.spines['top'].set_visible(False)
+            ax.set_xlabel(cat.upper(), fontsize=9, fontweight="bold", alpha=0.5)
+            img_name = _save(fig, f"box_{cat[:10]}_{num[:10]}")
+            charts.append(ChartMetadata(
+                chart_id=uuid.uuid4().hex, dataset=filename, plot_type="box_plot",
+                title=f"Segment Variation: {num} by {cat}", x_axis=cat, y_axis=num,
+                trend_direction="N/A", statistical_significance="Interquartile Range",
+                key_observations=[f"Significant variance noted across {cat} segments."],
+                image_url=f"/static/{session_dir.name}/{img_name}",
+            ))
+
+    # ── 3. Categorical Distributions (Pie) ────────────────────────
+    for cat in cat_cols[:3]:
+        counts = df[cat].value_counts().head(5)
+        if len(counts) < 2: continue
+        fig, ax = plt.subplots(figsize=(6, 6))
+        ax.pie(counts, labels=counts.index, autopct='%1.1f%%', colors=VIBRANT_PALETTE, 
+               startangle=140, pctdistance=0.85, wedgeprops={'width': 0.4, 'edgecolor': 'w'})
+        ax.set_title(f"Composition: {cat}", fontsize=12, fontweight="900", pad=20)
+        img_name = _save(fig, f"pie_{cat[:10]}")
         charts.append(ChartMetadata(
-            chart_id=uuid.uuid4().hex, dataset=filename, plot_type="box_plot",
-            title=f"{num} by {cat}", x_axis=cat, y_axis=num,
-            trend_direction="N/A", statistical_significance="Categorical Variance",
-            key_observations=[f"Segments identified for {cat}."],
+            chart_id=uuid.uuid4().hex, dataset=filename, plot_type="pie_chart",
+            title=f"Segment Composition: {cat}", x_axis="Category", y_axis="Percentage",
+            trend_direction="N/A", statistical_significance="Frequency Distribution",
+            key_observations=[f"Dominant segment: {counts.idxmax()} ({round(counts.max()/counts.sum()*100, 1)}%)"],
             image_url=f"/static/{session_dir.name}/{img_name}",
         ))
 
-    # ── 3. Pareto Chart (Monochrome) ──────────────────────────────────────────
-    if cat_cols and numeric_cols:
-        cat, num = cat_cols[0], numeric_cols[0]
-        pareto_df = df.groupby(cat)[num].sum().sort_values(ascending=False).to_frame()
-        pareto_df['cum_pct'] = pareto_df[num].cumsum() / pareto_df[num].sum() * 100
-        pareto_df = pareto_df.head(10)
-        
-        fig, ax1 = plt.subplots(figsize=(8, 4))
-        ax1.bar(pareto_df.index, pareto_df[num], color="#0d9488", alpha=0.8)
-        ax2 = ax1.twinx()
-        ax2.plot(pareto_df.index, pareto_df['cum_pct'], color="#e11d48", marker="o", ms=5, linewidth=2)
-        ax2.set_ylim(0, 110)
-        ax2.grid(False)
-        ax1.set_title(f"Pareto: {cat} vs {num}", fontsize=11, fontweight="bold")
-        img_name = _save(fig, "pareto")
-        charts.append(ChartMetadata(
-            chart_id=uuid.uuid4().hex, dataset=filename, plot_type="bar_chart",
-            title=f"Pareto Analysis: {cat} vs {num}", x_axis=cat, y_axis=num,
-            trend_direction="N/A", statistical_significance="80/20 Significance",
-            key_observations=["Concentration of value in top segments."],
-            image_url=f"/static/{session_dir.name}/{img_name}",
-        ))
-
-    # ── 4. Correlation Heatmap (Neutral) ─────────────────────────────
+    # ── 4. Correlation Heatmap (Refined) ──────────────────────────
     if len(numeric_cols) >= 3:
-        corr = df[numeric_cols[:12]].corr()
-        fig, ax = plt.subplots(figsize=(7, 6))
-        sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0, ax=ax, square=True,
-                    cbar_kws={"shrink": .8}, linewidths=1, annot_kws={"size": 9, "weight": "bold"})
-        ax.set_title("Correlation Matrix", fontsize=11, fontweight="bold")
-        img_name = _save(fig, "corr_matrix")
+        cols_to_corr = numeric_cols[:15]
+        corr = df[cols_to_corr].corr()
+        fig, ax = plt.subplots(figsize=(9, 8))
+        sns.heatmap(corr, annot=True, fmt=".2f", cmap="RdBu_r", center=0, ax=ax, square=True,
+                    cbar_kws={"shrink": .8}, linewidths=0.5, annot_kws={"size": 8})
+        ax.set_title("Metric Inter-dependency Matrix", fontsize=14, fontweight="900", pad=30)
+        img_name = _save(fig, "correlation_matrix")
         charts.append(ChartMetadata(
             chart_id=uuid.uuid4().hex, dataset=filename, plot_type="correlation_heatmap",
-            title="Correlation Matrix", x_axis="Features", y_axis="Features",
-            trend_direction="N/A", statistical_significance="Pearson",
-            key_observations=["Inter-dependency of metrics."],
+            title="Statistical Correlation Analysis", x_axis="Variables", y_axis="Variables",
+            trend_direction="N/A", statistical_significance="Pearson Coefficient",
+            key_observations=["High-dependency nodes identified.", "Red/Blue indicates pos/neg correlation."],
             image_url=f"/static/{session_dir.name}/{img_name}",
         ))
 
-    # ── 5. Scatter with Linear Trend (Slate/Black) ─────────────────
+    # ── 5. Advanced Scatter Grids ────────────────────────────────
     if len(numeric_cols) >= 2:
-        x, y = numeric_cols[0], numeric_cols[1]
-        fig, ax = plt.subplots(figsize=(7, 5))
-        sample_df = df.sample(min(len(df), 500))
-        sns.regplot(data=sample_df, x=x, y=y, ax=ax, 
-                    scatter_kws={"alpha": 0.6, "color": "#7c3aed", "s": 40, "edgecolor": "white"},
-                    line_kws={"color": "#000000", "linewidth": 2.5})
-        ax.set_title(f"Relationship: {x} vs {y}", fontsize=11, fontweight="bold")
-        img_name = _save(fig, "scatter_reg")
-        charts.append(ChartMetadata(
-            chart_id=uuid.uuid4().hex, dataset=filename, plot_type="scatter_plot",
-            title=f"Relationship: {x} vs {y}", x_axis=x, y_axis=y,
-            trend_direction="detected", statistical_significance="Linear Trend",
-            key_observations=["Directional relationship visible via regression line."],
-            image_url=f"/static/{session_dir.name}/{img_name}",
-        ))
+        for i in range(min(len(numeric_cols)-1, 3)):
+            x, y = numeric_cols[i], numeric_cols[i+1]
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sample_size = min(len(df), 1000)
+            sample_df = df.sample(sample_size)
+            sns.regplot(data=sample_df, x=x, y=y, ax=ax, 
+                        scatter_kws={"alpha": 0.4, "color": "#6366f1", "s": 30, "edgecolor": "none"},
+                        line_kws={"color": "#0f172a", "linewidth": 2})
+            ax.set_title(f"Scatter Analysis: {x} vs {y}", fontsize=12, fontweight="900", pad=20)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            img_name = _save(fig, f"scatter_{x[:10]}_{y[:10]}")
+            charts.append(ChartMetadata(
+                chart_id=uuid.uuid4().hex, dataset=filename, plot_type="scatter_plot",
+                title=f"Relational Flow: {x} vs {y}", x_axis=x, y_axis=y,
+                trend_direction="regression_fit", statistical_significance="Bi-variate Analysis",
+                key_observations=["Statistical trend line indicates overall direction.", f"Sample of {sample_size} nodes plotted."],
+                image_url=f"/static/{session_dir.name}/{img_name}",
+            ))
 
     return charts

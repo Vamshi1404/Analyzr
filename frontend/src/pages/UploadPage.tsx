@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
-import { Upload, FileText, X, Play } from 'lucide-react';
+import { Upload, FileText, X, Play, ArrowRight } from 'lucide-react';
 import { uploadFiles, runAnalysis } from '../lib/api';
 import { saveSession } from '../lib/sessionStore';
 import type { AnalysisResponse } from '../lib/types';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 interface Props {
     onPhaseChange: (sessionId: string, phase: 'uploading' | 'analyzing') => void;
@@ -35,7 +37,6 @@ export default function UploadPage({ onPhaseChange, onComplete }: Props) {
         try {
             const upload = await uploadFiles(files);
             saveSession(upload.session_id);
-            // Only transition AFTER session is established
             onPhaseChange(upload.session_id, 'uploading');
             onPhaseChange(upload.session_id, 'analyzing');
             const result = await runAnalysis(upload.session_id);
@@ -48,74 +49,118 @@ export default function UploadPage({ onPhaseChange, onComplete }: Props) {
     };
 
     return (
-        <div className="w-full max-w-4xl flex flex-col items-center justify-center space-y-24">
-            {/* Hero Section - Super Minimal */}
-            <div className="text-center space-y-8 animate-fade-in">
-                <h1 className="text-8xl md:text-9xl font-black tracking-tighter leading-none text-black uppercase">
-                    Analyzr.
+        <div className="w-full min-h-screen flex flex-col items-center justify-center px-4 py-14">
+            <div className="w-full max-w-3xl text-center space-y-3 mb-8">
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-100 leading-tight">
+                    Autonomous Analytics from CSVs
                 </h1>
-                <div className="flex items-center justify-center gap-6">
-                    <div className="h-px w-12 bg-accent opacity-30" />
-                    <p className="text-[10px] text-secondary font-black uppercase tracking-[0.5em] opacity-40">
-                        Autonomous CSV Intelligence
-                    </p>
-                    <div className="h-px w-12 bg-accent opacity-30" />
-                </div>
+                <p className="text-sm md:text-base text-slate-400">
+                    Upload your datasets to get AI-powered intelligence with charts and actionable insights.
+                </p>
             </div>
 
-            {/* Upload Card - The focus */}
-            <div className="card group relative w-full max-w-2xl bg-white border-2 border-black p-1">
-                <div className="border border-accent/20 p-20 relative overflow-hidden group/inner">
-                    {/* Background Glow */}
-                    <div className="absolute -inset-20 bg-gradient-to-tr from-accent/10 to-transparent blur-3xl opacity-0 group-hover/inner:opacity-100 transition-opacity duration-1000 pointer-events-none" />
-
-                    <div className={`
-                        relative z-10 flex flex-col items-center justify-center text-center cursor-pointer py-10
-                        ${dragging ? 'scale-[0.98]' : 'hover:scale-[1.01]'}
-                        transition-transform duration-500
-                    `}
-                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            <Card className="w-full max-w-3xl rounded-3xl" tone="default">
+                {/* Upload Area */}
+                <div
+                    className="p-8 md:p-10 transition-colors cursor-pointer"
+                    style={{
+                        backgroundColor: dragging ? 'rgba(139, 92, 246, 0.08)' : 'transparent'
+                    }}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragging(true);
+                    }}
                     onDragLeave={() => setDragging(false)}
-                    onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}
-                    onClick={() => document.getElementById('file-input')?.click()}>
-                        
-                        <input
-                            id="file-input"
-                            type="file"
-                            multiple
-                            accept=".csv"
-                            className="hidden"
-                            onChange={e => addFiles(e.target.files)}
-                        />
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        setDragging(false);
+                        addFiles(e.dataTransfer.files);
+                    }}
+                    onClick={() => document.getElementById('file-input')?.click()}
+                >
+                    <input
+                        id="file-input"
+                        type="file"
+                        multiple
+                        accept=".csv"
+                        className="hidden"
+                        onChange={(e) => addFiles(e.target.files)}
+                    />
 
-                        <div className="w-20 h-20 flex items-center justify-center mb-10 border-2 border-black bg-white group-hover/inner:bg-accent group-hover/inner:text-white group-hover/inner:border-accent transition-all duration-500">
-                            <Upload size={28} />
+                    <div className="flex justify-center mb-6">
+                        <div
+                            className="w-20 h-20 rounded-2xl border flex items-center justify-center"
+                            style={{
+                                backgroundColor: dragging ? 'rgba(139, 92, 246, 0.16)' : 'rgba(2, 6, 23, 0.2)',
+                                borderColor: dragging ? 'rgba(139, 92, 246, 0.45)' : 'rgba(71, 85, 105, 0.6)'
+                            }}
+                        >
+                            <Upload
+                                size={40}
+                                style={{
+                                    color: dragging ? '#c4b5fd' : '#8b5cf6'
+                                }}
+                            />
                         </div>
-                        <h3 className="text-4xl font-black tracking-tighter mb-4 uppercase">Ingest Assets</h3>
-                        <p className="text-[10px] text-secondary font-black mb-12 max-w-xs opacity-40 uppercase tracking-[0.4em] leading-relaxed">
-                            Secure Multi-Dataset Orchestration Framework.
+                    </div>
+
+                    <div className="text-center space-y-3">
+                        <h3 className="text-2xl md:text-3xl font-display font-bold text-slate-100">
+                            {files.length > 0 ? (
+                                <span>
+                                    <span className="text-purple-300">{files.length}</span>{' '}
+                                    {files.length === 1 ? 'file' : 'files'} ready
+                                </span>
+                            ) : (
+                                <span>
+                                    Upload Your <span className="text-purple-300">Data</span>
+                                </span>
+                            )}
+                        </h3>
+                        <p className="text-sm text-slate-400">
+                            {dragging ? 'Release to upload' : 'CSV files • Drag and drop or click to browse'}
                         </p>
-                        <button className="btn-outline">
-                            Select Files
-                        </button>
                     </div>
                 </div>
 
-                {/* Staged Files - Integrated into card */}
+                {/* File List */}
                 {files.length > 0 && (
-                    <div className="mt-1 animate-fade-in w-full bg-black">
+                    <div className="border-t border-slate-800 divide-y divide-slate-800 bg-slate-950/10">
+                        <div className="px-6 py-4 flex items-center">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                Uploaded Files
+                            </span>
+                        </div>
                         {files.map((file, i) => (
-                            <div key={i} className="flex items-center justify-between p-8 bg-white border-t border-black group/file hover:bg-secondary transition-all">
-                                <div className="flex items-center gap-8">
-                                    <div className="w-10 h-10 bg-accent text-white flex items-center justify-center border border-accent shadow-lg shadow-accent/20">
-                                        <FileText size={18} />
+                            <div
+                                key={i}
+                                className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-slate-800/30 transition-colors"
+                            >
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div
+                                        className="w-10 h-10 rounded-xl border border-slate-700 bg-slate-950/30 flex items-center justify-center"
+                                        style={{
+                                            backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                                            borderColor: 'rgba(139, 92, 246, 0.28)'
+                                        }}
+                                    >
+                                        <FileText size={18} style={{ color: '#a78bfa' }} />
                                     </div>
-                                    <div>
-                                        <p className="text-[12px] font-black truncate max-w-[250px] uppercase tracking-tighter">{file.name}</p>
-                                        <p className="text-[10px] font-bold text-muted uppercase tracking-[0.3em]">{(file.size / 1024).toFixed(1)} KB</p>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold text-slate-100 truncate">{file.name}</p>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            {(file.size / 1024).toFixed(1)} KB
+                                        </p>
                                     </div>
                                 </div>
-                                <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="w-10 h-10 border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeFile(i);
+                                    }}
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500/15 border border-transparent hover:border-red-500/20 transition-colors"
+                                    aria-label={`Remove ${file.name}`}
+                                >
                                     <X size={16} />
                                 </button>
                             </div>
@@ -123,34 +168,48 @@ export default function UploadPage({ onPhaseChange, onComplete }: Props) {
                     </div>
                 )}
 
-                {/* Status & Action - Integrated with absolute positioning fix */}
-                <div className="mt-1 relative z-20">
-                    {error && (
-                        <div className="p-8 bg-black text-white border-t border-accent text-[10px] font-black uppercase tracking-[0.4em] flex items-center gap-6 animate-fade-in">
-                             <div className="w-2 h-2 bg-accent animate-pulse" />
-                             {error}
+                {/* Error Message */}
+                {error && (
+                    <div className="border-t border-slate-800 bg-red-500/10 px-6 py-5">
+                        <div className="flex items-start gap-3">
+                            <div className="w-2 h-2 rounded-full mt-1" style={{ backgroundColor: '#ef4444' }} />
+                            <p className="text-sm text-red-200">{error}</p>
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); handleExecute(); }}
+                {/* Action Button */}
+                <div className="border-t border-slate-800 p-6">
+                    <Button
+                        onClick={handleExecute}
                         disabled={!files.length || loading}
-                        className="w-full btn-primary py-10"
+                        className="w-full rounded-2xl"
                     >
                         {loading ? (
-                            <div className="flex items-center gap-6">
-                                <div className="w-5 h-5 border-2 border-white/20 border-t-white animate-spin" />
-                                Synthesizing...
+                            <div className="flex items-center justify-center gap-2">
+                                <div
+                                    style={{
+                                        width: 18,
+                                        height: 18,
+                                        borderRadius: '50%',
+                                        border: '2px solid rgba(255, 255, 255, 0.35)',
+                                        borderTopColor: 'white',
+                                        animation: 'rotate-slow 1s linear infinite'
+                                    }}
+                                />
+                                <span>Analyzing</span>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-6">
-                                <Play size={20} fill="currentColor" />
-                                Initialize Comprehensive Analysis
+                            <div className="flex items-center justify-center gap-2">
+                                <Play size={18} fill="currentColor" />
+                                <span>Begin Analysis</span>
+                                <ArrowRight size={16} />
                             </div>
                         )}
-                    </button>
+                    </Button>
                 </div>
-            </div>
+            </Card>
         </div>
     );
 }
+

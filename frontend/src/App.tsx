@@ -5,7 +5,6 @@ import LoadingScreen from './components/LoadingScreen';
 import ChatBubble from './components/ChatBubble';
 import UploadView from './pages/UploadPage';
 import Layout from './components/Layout';
-// import ReportsView from './pages/ReportsView';
 import type { AnalysisResponse } from './lib/types';
 import type { ChartMetadata } from './lib/types';
 import { fetchVisualizations } from './lib/api';
@@ -19,6 +18,7 @@ export default function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [charts, setCharts] = useState<ChartMetadata[]>([]);
+  const [chatPrompt, setChatPrompt] = useState<string | null>(null);
 
   async function handleStart(sid: string, phase: LoadPhase) {
     setSessionId(sid);
@@ -46,6 +46,7 @@ export default function App() {
     setSessionId(null);
     setAnalysis(null);
     setCharts([]);
+    setChatPrompt(null);
   }
 
   return (
@@ -67,6 +68,7 @@ export default function App() {
                   charts={charts}
                   sessionId={sessionId}
                   onReset={handleReset}
+                  onAskAI={(prompt) => setChatPrompt(prompt)}
                 />
               </>
             ) : (
@@ -78,7 +80,11 @@ export default function App() {
         </Routes>
         {/* Show Chat Assistant ONLY after analysis */}
         {analysis && charts && (
-            <ChatBubble sessionId={sessionId || 'default-session'} />
+          <ChatBubble
+            sessionId={sessionId || 'default-session'}
+            pendingPrompt={chatPrompt}
+            onPendingPromptConsumed={() => setChatPrompt(null)}
+          />
         )}
       </Layout>
     </Router>
