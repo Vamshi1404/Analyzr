@@ -8,15 +8,15 @@ export function Card({
   ...rest
 }: React.HTMLAttributes<HTMLDivElement> & { tone?: CardTone }) {
   const toneClasses: Record<CardTone, string> = {
-    default: 'bg-slate-900/35 border border-slate-800',
-    muted: 'bg-slate-950/20 border border-slate-800',
-    elevated: 'bg-slate-900/40 border border-slate-700',
+    default: 'bg-white border border-gray-200 shadow-sm',
+    muted: 'bg-gray-50 border border-gray-200 shadow-sm',
+    elevated: 'bg-white border border-gray-300 shadow-md',
   };
 
   return (
     <div
       className={cn(
-        'rounded-2xl backdrop-blur-sm overflow-hidden',
+        'rounded-2xl overflow-hidden',
         toneClasses[tone],
         className,
       )}

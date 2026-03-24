@@ -27,33 +27,41 @@ Analyzr/
 ## 🛠️ Quick Start
 
 ### Prerequisites
+
 - [uv](https://github.com/astral-sh/uv) (Modern Python package manager)
 - [Ollama](https://ollama.ai/) with the `mistral` model installed.
 - [Node.js](https://nodejs.org/) & `npm`
 
 ### 1. Backend Setup
+
 ```bash
 cd backend
 uv run uvicorn main:app --reload
 ```
+
 The backend initializes the Leela AI engine and handles data ingestion, processing, and session management.
 
 ### 2. Frontend Setup
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
 The frontend provides a clinical, authoritative interface for interacting with your data and AI analyst.
 
 ## 🎨 Aesthetics & Design
+
 Analyzr follows a **Strict High-Minimalism** design system:
-- **Core Palette**: 
+
+- **Core Palette**:
   - `Pure Black (#000000)`
   - `Pure White (#ffffff)`
-  - `Metallic Gold (#d4af37)`
+  - `Orange (#d4af37)`
 - **Identity**: Clinical, authoritative, and data-centric.
 - **Visuals**: "Monalisa style" charts with high-contrast palettes for maximum legibility and professional impact.
 
 ---
-*Built for Executive Decision Intelligence.*
+
+_Built for Executive Decision Intelligence._

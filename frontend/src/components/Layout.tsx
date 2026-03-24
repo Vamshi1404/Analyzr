@@ -3,39 +3,145 @@ import { Sparkles } from 'lucide-react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const isHome = location.pathname === '/';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/70 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-center font-bold text-lg text-slate-50">
-              A
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f4f0', fontFamily: 'DM Sans, sans-serif' }}>
+
+      {/* ── Header ── */}
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+        backgroundColor: 'rgba(255,255,255,0.88)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid #e4e3dd',
+        boxShadow: '0 1px 3px rgba(20,20,18,0.06)',
+      }}>
+        <div style={{
+          maxWidth: 1360,
+          margin: '0 auto',
+          padding: '0 2.5rem',
+          height: 60,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+        }}>
+
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <div style={{
+              width: 34, height: 34,
+              borderRadius: 9,
+              background: 'linear-gradient(135deg, #e8572a 0%, #c73f14 100%)',
+              border: '1px solid #c73f14',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(232,87,42,0.30)',
+              flexShrink: 0,
+            }}>
+              <span style={{
+                fontFamily: 'Syne, sans-serif',
+                fontWeight: 800,
+                fontSize: '1rem',
+                color: '#fff',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+              }}>
+                A
+              </span>
             </div>
             <div>
-              <h1 className="text-lg font-bold font-display tracking-tight">Analyzr</h1>
-              <p className="text-xs text-slate-400 font-medium">Data Intelligence</p>
+              <h1 style={{
+                fontFamily: 'Syne, sans-serif',
+                fontWeight: 700,
+                fontSize: '1rem',
+                color: '#141412',
+                margin: 0,
+                letterSpacing: '-0.01em',
+                lineHeight: 1.2,
+              }}>
+                Analyzr
+              </h1>
+              <p style={{
+                fontSize: '0.6875rem',
+                fontWeight: 500,
+                color: '#b8b7b0',
+                margin: 0,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                lineHeight: 1,
+                marginTop: 2,
+              }}>
+                Data Intelligence
+              </p>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-            <Sparkles size={14} />
-            Powered by AI Intelligence Engine
+          {/* Right side pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '5px 12px',
+            borderRadius: 999,
+            backgroundColor: '#fafaf8',
+            border: '1px solid #e4e3dd',
+          }}>
+            <Sparkles size={12} style={{ color: '#e8572a' }} />
+            <span style={{
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              color: '#9a9891',
+              letterSpacing: '0.02em',
+              whiteSpace: 'nowrap',
+            }}>
+              Powered by AI Intelligence Engine
+            </span>
           </div>
+
         </div>
       </header>
 
-      <main className="relative">{children}</main>
+      {/* ── Main ── */}
+      <main style={{ position: 'relative' }}>{children}</main>
 
-      {/* Keep footer minimal; pages handle their own spacing */}
-      {location.pathname !== '/' && (
-        <footer className="border-t border-slate-800 py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <Sparkles size={14} />
-              Powered by AI Intelligence Engine
+      {/* ── Footer ── */}
+      {!isHome && (
+        <footer style={{
+          borderTop: '1px solid #e4e3dd',
+          backgroundColor: '#fff',
+        }}>
+          <div style={{
+            maxWidth: 1360,
+            margin: '0 auto',
+            padding: '1.25rem 2.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Sparkles size={12} style={{ color: '#e8572a' }} />
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 400,
+                color: '#b8b7b0',
+                letterSpacing: '0.02em',
+              }}>
+                Powered by AI Intelligence Engine
+              </span>
             </div>
-            <p className="text-xs text-slate-400">© 2024 Analyzr. All rights reserved.</p>
+            <p style={{
+              fontSize: '0.75rem',
+              fontWeight: 400,
+              color: '#c8c7c0',
+              margin: 0,
+              letterSpacing: '0.01em',
+            }}>
+              © 2025 Analyzr. All rights reserved.
+            </p>
           </div>
         </footer>
       )}

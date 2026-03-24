@@ -1,106 +1,400 @@
 import { useState } from 'react';
-import { MessageSquare, ChevronRight, BarChart3, FileText, Download, RotateCcw, X, ZoomIn, MessageCircle } from 'lucide-react';
+import {
+    MessageSquare,
+    ChevronRight,
+    BarChart3,
+    FileText,
+    Download,
+    RotateCcw,
+    X,
+    ZoomIn,
+    MessageCircle,
+    Sparkles,
+    TrendingUp,
+    Search,
+    ArrowUpRight,
+    Rocket,
+} from 'lucide-react';
 import type { AnalysisResponse, Insight, ChartMetadata } from '../lib/types';
-import { Button } from './ui/Button';
-import { Tabs, TabsTrigger } from './ui/Tabs';
 
+/* ─────────────────────────────────────────────────────────────
+   LAYER CONFIG
+───────────────────────────────────────────────────────────── */
+const LAYER_CONFIG: Record<
+    string,
+    {
+        bg: string;
+        text: string;
+        border: string;
+        accent: string;
+        barBg: string;
+        icon: React.ReactNode;
+        label: string;
+    }
+> = {
+    descriptive: {
+        bg: '#eef2ff',
+        text: '#4338ca',
+        border: '#6366f1',
+        accent: '#312e81',
+        barBg: '#6366f1',
+        icon: <BarChart3 size={13} />,
+        label: 'Descriptive',
+    },
+    diagnostic: {
+        bg: '#fff7ed',
+        text: '#c2410c',
+        border: '#f97316',
+        accent: '#7c2d12',
+        barBg: '#f97316',
+        icon: <Search size={13} />,
+        label: 'Diagnostic',
+    },
+    predictive: {
+        bg: '#f0fdf4',
+        text: '#166534',
+        border: '#22c55e',
+        accent: '#14532d',
+        barBg: '#22c55e',
+        icon: <TrendingUp size={13} />,
+        label: 'Predictive',
+    },
+    business: {
+        bg: '#fdf4ff',
+        text: '#86198f',
+        border: '#d946ef',
+        accent: '#701a75',
+        barBg: '#d946ef',
+        icon: <Rocket size={13} />,
+        label: 'Actionable',
+    },
+};
+
+/* ─────────────────────────────────────────────────────────────
+   INSIGHT CARD
+───────────────────────────────────────────────────────────── */
 function InsightCard({ insight }: { insight: Insight }) {
     const [expanded, setExpanded] = useState(false);
-    const layerColors: Record<string, { bg: string; text: string; border: string }> = {
-        descriptive: { bg: 'rgba(139,92,246,0.15)', text: '#8b5cf6', border: '#8b5cf6' },
-        diagnostic: { bg: 'rgba(30,41,59,0.1)', text: '#a78bfa', border: '#8b5cf6' },
-        predictive: { bg: 'rgba(109,40,217,0.1)', text: '#a78bfa', border: '#6d28d9' },
-        business: { bg: 'rgba(139,92,246,0.15)', text: '#8b5cf6', border: '#8b5cf6' }
-    };
-    const color = layerColors[insight.layer] || layerColors.descriptive;
+    const cfg = LAYER_CONFIG[insight.layer] ?? LAYER_CONFIG.descriptive;
 
     return (
-        <div 
-            className="bg-slate-900/35 backdrop-blur-xl rounded-lg border border-slate-800 overflow-hidden hover:border-slate-600 transition-colors cursor-pointer"
-            style={{ borderColor: color.border }}
-            onClick={() => setExpanded(!expanded)}
+        <div
+            onClick={() => setExpanded((p) => !p)}
+            style={{
+                backgroundColor: cfg.bg,
+                border: `1.5px solid ${cfg.border}44`,
+                borderRadius: 14,
+                overflow: 'hidden',
+                cursor: 'pointer',
+                boxShadow: '0 1px 4px rgba(20,20,18,0.05)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.transform = 'translateY(-2px)';
+                el.style.boxShadow = '0 8px 24px rgba(20,20,18,0.10)';
+            }}
+            onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.transform = 'translateY(0)';
+                el.style.boxShadow = '0 1px 4px rgba(20,20,18,0.05)';
+            }}
         >
-            <div className="p-4 md:p-5" style={{ backgroundColor: color.bg }}>
-                <div className="flex items-start justify-between gap-3 mb-3">
-                    <span
-                        className="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider border"
-                        style={{ backgroundColor: color.bg, color: color.text, borderColor: color.border }}
-                    >
-                        {insight.layer}
-                    </span>
-                    <ChevronRight size={16} style={{ color: color.text }} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
-                </div>
-                <p className="text-sm font-medium text-slate-100 leading-relaxed">
+            <div
+                style={{
+                    backgroundColor: cfg.barBg,
+                    padding: '5px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 7,
+                    color: '#fff',
+                    fontSize: '0.6rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                }}
+            >
+                {cfg.icon}
+                {cfg.label}
+            </div>
+
+            <div
+                style={{
+                    padding: '1rem 1.125rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                }}
+            >
+                <p
+                    style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 400,
+                        lineHeight: 1.7,
+                        color: cfg.accent,
+                        margin: 0,
+                        flex: 1,
+                        letterSpacing: '0.01em',
+                    }}
+                >
                     {insight.business_interpretation}
                 </p>
+                <ChevronRight
+                    size={15}
+                    style={{
+                        color: cfg.border,
+                        flexShrink: 0,
+                        marginTop: 3,
+                        transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                    }}
+                />
             </div>
+
             {expanded && (
-                <div className="border-t border-slate-800 p-4 bg-slate-950/10" style={{ borderColor: color.border }}>
-                    <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Statistical Data</p>
-                    <pre className="text-xs bg-slate-950/40 backdrop-blur p-3 rounded border border-slate-800 overflow-x-auto text-slate-300">
-                        {JSON.stringify(insight.statistical_value, null, 2)}
-                    </pre>
+                <div style={{ padding: '0 1.125rem 1rem' }}>
+                    <div
+                        style={{
+                            borderRadius: 10,
+                            overflow: 'hidden',
+                            border: `1px solid ${cfg.border}33`,
+                        }}
+                    >
+                        <div
+                            style={{
+                                padding: '4px 12px',
+                                backgroundColor: `${cfg.barBg}18`,
+                                fontSize: '0.6rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.12em',
+                                color: cfg.accent,
+                            }}
+                        >
+                            Statistical Breakdown
+                        </div>
+                        <pre
+                            style={{
+                                margin: 0,
+                                padding: '0.75rem',
+                                fontSize: '0.75rem',
+                                lineHeight: 1.65,
+                                fontFamily: 'monospace',
+                                color: cfg.accent,
+                                backgroundColor: cfg.bg,
+                                overflowX: 'auto',
+                            }}
+                        >
+                            {JSON.stringify(insight.statistical_value, null, 2)}
+                        </pre>
+                    </div>
                 </div>
             )}
         </div>
     );
 }
 
-function ZoomModal({ chart, onClose, onAskAI }: { chart: ChartMetadata; onClose: () => void; onAskAI: (chart: ChartMetadata) => void }) {
+/* ─────────────────────────────────────────────────────────────
+   ZOOM MODAL
+───────────────────────────────────────────────────────────── */
+function ZoomModal({
+    chart,
+    onClose,
+    onAskAI,
+}: {
+    chart: ChartMetadata;
+    onClose: () => void;
+    onAskAI: (chart: ChartMetadata) => void;
+}) {
     return (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-950/90 backdrop-blur-2xl rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-800">
-                {/* Header */}
-                <div className="sticky top-0 flex items-center justify-between p-6 border-b border-slate-800 bg-slate-950/40 backdrop-blur-xl z-10">
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 50,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1.5rem',
+                backgroundColor: 'rgba(10,10,8,0.72)',
+                backdropFilter: 'blur(10px)',
+            }}
+            onClick={onClose}
+        >
+            <div
+                style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 24,
+                    maxWidth: 940,
+                    width: '100%',
+                    maxHeight: '92vh',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 40px 100px rgba(20,20,18,0.35)',
+                    border: '1px solid #e0dfd9',
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div
+                    style={{
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 10,
+                        backgroundColor: '#fff',
+                        borderBottom: '1px solid #e0dfd9',
+                        padding: '1.375rem 2rem',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        gap: 16,
+                    }}
+                >
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-100 mb-1">{chart.title}</h2>
-                        <p className="text-sm text-slate-400 uppercase tracking-widest">{chart.plot_type.replace(/_/g, ' ')}</p>
+                        <h2
+                            style={{
+                                fontFamily: 'DM Sans, sans-serif',
+                                fontWeight: 600,
+                                fontSize: '1.1rem',
+                                color: '#141412',
+                                margin: '0 0 8px',
+                                letterSpacing: '0.005em',
+                                lineHeight: 1.4,
+                            }}
+                        >
+                            {chart.title}
+                        </h2>
+                        <span
+                            style={{
+                                display: 'inline-block',
+                                padding: '3px 12px',
+                                borderRadius: 999,
+                                fontSize: '0.6rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.1em',
+                                backgroundColor: '#fef0eb',
+                                color: '#c73f14',
+                                border: '1px solid rgba(232,87,42,0.25)',
+                            }}
+                        >
+                            {chart.plot_type.replace(/_/g, ' ')}
+                        </span>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-slate-800/60 rounded-lg transition-colors text-slate-300 border border-transparent hover:border-slate-700"
+                        aria-label="Close"
+                        style={{
+                            padding: 9,
+                            border: '1.5px solid #e0dfd9',
+                            borderRadius: 10,
+                            backgroundColor: 'transparent',
+                            cursor: 'pointer',
+                            color: '#8a8880',
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={(e) =>
+                            ((e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f3f2ef')
+                        }
+                        onMouseLeave={(e) =>
+                            ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent')
+                        }
                     >
-                        <X size={24} />
+                        <X size={18} />
                     </button>
                 </div>
 
-                {/* Chart Image */}
-                <div className="p-6 bg-slate-950/20 flex justify-center">
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '2.5rem',
+                        backgroundColor: '#fafaf8',
+                    }}
+                >
                     <img
                         src={chart.image_url}
                         alt={chart.title}
-                        className="max-w-full h-auto rounded-lg border border-slate-800"
+                        style={{
+                            maxWidth: '100%',
+                            height: 'auto',
+                            borderRadius: 16,
+                            border: '1px solid #e0dfd9',
+                            boxShadow: '0 4px 16px rgba(20,20,18,0.08)',
+                        }}
                     />
                 </div>
 
-                {/* Key Observations */}
                 {chart.key_observations.length > 0 && (
-                    <div className="p-6 border-t border-slate-800">
-                        <p className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">Key Observations</p>
-                        <ul className="space-y-3">
-                            {chart.key_observations.map((obs, idx) => (
-                                <li key={idx} className="flex gap-3 text-sm text-slate-300">
-                                    <span className="w-2 h-2 bg-purple-400/30 rounded-full flex-shrink-0 mt-2" />
-                                    <span>{obs}</span>
+                    <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid #e0dfd9' }}>
+                        <p
+                            style={{
+                                fontSize: '0.6rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.12em',
+                                color: '#8a8880',
+                                marginBottom: 14,
+                            }}
+                        >
+                            Key Observations
+                        </p>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {chart.key_observations.map((obs, i) => (
+                                <li
+                                    key={i}
+                                    style={{
+                                        display: 'flex',
+                                        gap: 12,
+                                        alignItems: 'flex-start',
+                                        fontSize: '0.9rem',
+                                        fontWeight: 400,
+                                        color: '#3d3b35',
+                                        lineHeight: 1.7,
+                                        letterSpacing: '0.01em',
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            width: 5,
+                                            height: 5,
+                                            borderRadius: '50%',
+                                            backgroundColor: '#e8572a',
+                                            flexShrink: 0,
+                                            marginTop: 8,
+                                        }}
+                                    />
+                                    {obs}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="p-6 border-t border-slate-800 bg-slate-950/20 flex gap-3 justify-end">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 border border-slate-700 rounded-lg text-slate-300 font-medium hover:bg-slate-900/40 transition-colors"
-                    >
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: 10,
+                        padding: '1.25rem 2rem',
+                        borderTop: '1px solid #e0dfd9',
+                        backgroundColor: '#fafaf8',
+                        borderRadius: '0 0 24px 24px',
+                    }}
+                >
+                    <button className="btn-outline" onClick={onClose} style={{ padding: '9px 20px' }}>
                         Close
                     </button>
                     <button
+                        className="btn-accent"
                         onClick={() => onAskAI(chart)}
-                        className="px-6 py-2 rounded-lg text-white font-medium flex items-center gap-2 transition-colors bg-purple-600/90 hover:bg-purple-600 border border-purple-500/30"
+                        style={{ padding: '9px 20px' }}
                     >
-                        <MessageCircle size={18} />
+                        <MessageCircle size={14} />
                         Ask AI
                     </button>
                 </div>
@@ -109,7 +403,168 @@ function ZoomModal({ chart, onClose, onAskAI }: { chart: ChartMetadata; onClose:
     );
 }
 
-export default function ResultsPage({ analysis, charts, sessionId, onReset, onAskAI }: {
+/* ─────────────────────────────────────────────────────────────
+   METRIC CARD
+───────────────────────────────────────────────────────────── */
+function MetricCard({
+    label,
+    value,
+    interpretation,
+}: {
+    label: string;
+    value: string;
+    interpretation: string;
+}) {
+    // Skip rendering if value is a placeholder or suspiciously long
+    const isPlaceholder =
+        !value ||
+        value.length > 40 ||
+        value.toLowerCase().includes('not specified') ||
+        value.toLowerCase().includes('required') ||
+        value.toLowerCase().includes('analysis needed') ||
+        value.toLowerCase().includes('n/a');
+
+    if (isPlaceholder) return null;
+
+    return (
+        <div
+            style={{
+                backgroundColor: '#fff',
+                border: '1px solid #e8e7e1',
+                borderRadius: 16,
+                padding: '1.5rem',
+                transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+                boxShadow: '0 1px 3px rgba(20,20,18,0.05)',
+            }}
+            onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.boxShadow = '0 8px 24px rgba(20,20,18,0.10)';
+                el.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLDivElement;
+                el.style.boxShadow = '0 1px 3px rgba(20,20,18,0.05)';
+                el.style.transform = 'translateY(0)';
+            }}
+        >
+            <p
+                style={{
+                    fontSize: '0.6rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    color: '#b8b7b0',
+                    margin: '0 0 10px',
+                }}
+            >
+                {label}
+            </p>
+            <p
+                style={{
+                    fontFamily: 'Syne, sans-serif',
+                    fontSize: '2rem',
+                    fontWeight: 700,
+                    color: '#e8572a',
+                    lineHeight: 1.15,
+                    margin: '0 0 10px',
+                    letterSpacing: '-0.02em',
+                }}
+            >
+                {value}
+            </p>
+            <p
+                style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 400,
+                    color: '#6b6965',
+                    lineHeight: 1.7,
+                    margin: 0,
+                    letterSpacing: '0.01em',
+                }}
+            >
+                {interpretation}
+            </p>
+        </div>
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION HEADER
+───────────────────────────────────────────────────────────── */
+function SectionHeader({
+    icon,
+    title,
+    subtitle,
+    iconBg = '#141412',
+}: {
+    icon: React.ReactNode;
+    title: string;
+    subtitle?: string;
+    iconBg?: string;
+}) {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div
+                style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor: iconBg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    flexShrink: 0,
+                    boxShadow: iconBg === '#e8572a'
+                        ? '0 4px 16px rgba(232,87,42,0.35)'
+                        : '0 4px 12px rgba(20,20,18,0.18)',
+                }}
+            >
+                {icon}
+            </div>
+            <div>
+                <h2
+                    style={{
+                        fontFamily: 'Syne, sans-serif',
+                        fontWeight: 700,
+                        fontSize: '1.25rem',
+                        color: '#141412',
+                        margin: 0,
+                        lineHeight: 1.3,
+                        letterSpacing: '-0.01em',
+                    }}
+                >
+                    {title}
+                </h2>
+                {subtitle && (
+                    <p
+                        style={{
+                            fontSize: '0.875rem',
+                            color: '#7a7975',
+                            margin: '4px 0 0',
+                            lineHeight: 1.55,
+                            letterSpacing: '0.01em',
+                            fontWeight: 400,
+                        }}
+                    >
+                        {subtitle}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RESULTS PAGE
+───────────────────────────────────────────────────────────── */
+export default function ResultsPage({
+    analysis,
+    charts,
+    sessionId,
+    onReset,
+    onAskAI,
+}: {
     analysis: AnalysisResponse;
     charts: ChartMetadata[];
     sessionId: string;
@@ -131,12 +586,8 @@ export default function ResultsPage({ analysis, charts, sessionId, onReset, onAs
         }
     };
 
-    const buildChartPrompt = (chart: ChartMetadata) => {
-        const observations = chart.key_observations?.length
-            ? chart.key_observations.map((o) => `- ${o}`).join('\n')
-            : '- (no key observations provided)';
-
-        return [
+    const buildChartPrompt = (chart: ChartMetadata): string =>
+        [
             `You are analyzing a visualization from a data intelligence report.`,
             ``,
             `Chart context:`,
@@ -147,7 +598,9 @@ export default function ResultsPage({ analysis, charts, sessionId, onReset, onAs
             `Statistical significance: ${chart.statistical_significance}`,
             ``,
             `Key observations:`,
-            observations,
+            chart.key_observations?.length
+                ? chart.key_observations.map((o) => `- ${o}`).join('\n')
+                : '- (none provided)',
             ``,
             `Give me:`,
             `1) A concise plain-language summary`,
@@ -155,206 +608,671 @@ export default function ResultsPage({ analysis, charts, sessionId, onReset, onAs
             `3) Any anomalies or risks`,
             `4) 2-3 practical next questions I should ask`,
         ].join('\n');
-    };
 
     const handleAskAI = (chart: ChartMetadata) => {
         setZoomedChart(null);
         onAskAI(buildChartPrompt(chart));
     };
 
-    return (
-        <div className="w-full min-h-screen pb-24 bg-slate-950">
+    const insightSections = [
+        { key: 'descriptive' as const },
+        { key: 'diagnostic' as const },
+        { key: 'predictive' as const },
+        { key: 'business' as const },
+    ] as const;
 
-            {/* Header */}
-            <div className="mb-12">
-                <div className="max-w-7xl mx-auto px-4 md:px-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
-                        <div className="space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/25 bg-purple-500/10">
-                                <span className="text-xs font-semibold text-purple-200 uppercase tracking-widest">✓ Analysis Complete</span>
-                            </div>
-                            <div>
-                                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-100 mb-2">
-                                    Your <span className="text-purple-300">Intelligence Report</span>
-                                </h1>
-                                <p className="text-sm text-slate-400">
-                                    Session ID: <span className="font-mono font-semibold text-slate-300">{sessionId.substring(0, 12)}...</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex gap-3 flex-col sm:flex-row">
-                            <Button
-                                onClick={onReset}
-                                variant="outline"
-                                className="justify-center"
+    const showInsights = view === 'all' || view === 'insights';
+    const showPlots = view === 'all' || view === 'plots';
+    const tabs = ['all', 'insights', 'plots'] as const;
+
+    return (
+        <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#f5f4f0' }}>
+
+            {/* ──────────── HERO HEADER ──────────── */}
+            <div
+                style={{
+                    background: 'linear-gradient(150deg, #0f0e0c 0%, #1a1814 50%, #211d14 100%)',
+                    width: '100%',
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}
+            >
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: -80,
+                        right: '15%',
+                        width: 320,
+                        height: 320,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(232,87,42,0.12) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                    }}
+                />
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: -60,
+                        left: '5%',
+                        width: 240,
+                        height: 240,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                    }}
+                />
+
+                <div
+                    style={{
+                        maxWidth: 1360,
+                        margin: '0 auto',
+                        padding: '4rem 3rem 3.5rem',
+                        position: 'relative',
+                        zIndex: 1,
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '2.5rem',
+                            marginBottom: '3.5rem',
+                        }}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                            <div
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 7,
+                                    padding: '5px 14px',
+                                    borderRadius: 999,
+                                    backgroundColor: 'rgba(232,87,42,0.15)',
+                                    border: '1px solid rgba(232,87,42,0.30)',
+                                    width: 'fit-content',
+                                }}
                             >
-                                <RotateCcw size={18} />
+                                <Sparkles size={11} color="#e8572a" />
+                                <span
+                                    style={{
+                                        fontSize: '0.6rem',
+                                        fontWeight: 700,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.14em',
+                                        color: '#e8572a',
+                                    }}
+                                >
+                                    Analysis Complete
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <h1
+                                    style={{
+                                        fontFamily: 'Syne, sans-serif',
+                                        fontWeight: 700,
+                                        fontSize: 'clamp(2.25rem, 4.5vw, 3.375rem)',
+                                        lineHeight: 1.15,
+                                        letterSpacing: '-0.015em',
+                                        color: 'rgba(250,250,248,0.60)',
+                                        margin: 0,
+                                        display: 'block',
+                                    }}
+                                >
+                                    Intelligence
+                                </h1>
+                                <h1
+                                    style={{
+                                        fontFamily: 'Syne, sans-serif',
+                                        fontWeight: 700,
+                                        fontSize: 'clamp(2.25rem, 4.5vw, 3.375rem)',
+                                        lineHeight: 1.15,
+                                        letterSpacing: '-0.015em',
+                                        margin: 0,
+                                        display: 'block',
+                                        background: 'linear-gradient(110deg, #e8572a 10%, #f59e0b 85%)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text',
+                                        color: 'transparent',
+                                    }}
+                                >
+                                    Report
+                                </h1>
+                            </div>
+
+                            <p
+                                style={{
+                                    fontFamily: 'DM Sans, sans-serif',
+                                    fontSize: '0.8125rem',
+                                    color: 'rgba(250,250,248,0.28)',
+                                    margin: 0,
+                                    letterSpacing: '0.03em',
+                                    fontWeight: 400,
+                                }}
+                            >
+                                Session{' '}
+                                <span style={{
+                                    fontFamily: 'monospace',
+                                    color: 'rgba(250,250,248,0.42)',
+                                    fontSize: '0.75rem',
+                                }}>
+                                    {sessionId.substring(0, 16)}…
+                                </span>
+                            </p>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', paddingTop: 4 }}>
+                            <button
+                                onClick={onReset}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    padding: '11px 22px',
+                                    borderRadius: 12,
+                                    border: '1.5px solid rgba(255,255,255,0.16)',
+                                    backgroundColor: 'rgba(255,255,255,0.06)',
+                                    color: 'rgba(250,250,248,0.80)',
+                                    fontFamily: 'DM Sans, sans-serif',
+                                    fontWeight: 600,
+                                    fontSize: '0.875rem',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s ease, border-color 0.2s ease',
+                                    letterSpacing: '0.01em',
+                                }}
+                                onMouseEnter={(e) => {
+                                    const b = e.currentTarget as HTMLButtonElement;
+                                    b.style.backgroundColor = 'rgba(255,255,255,0.12)';
+                                    b.style.borderColor = 'rgba(255,255,255,0.28)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    const b = e.currentTarget as HTMLButtonElement;
+                                    b.style.backgroundColor = 'rgba(255,255,255,0.06)';
+                                    b.style.borderColor = 'rgba(255,255,255,0.16)';
+                                }}
+                            >
+                                <RotateCcw size={15} />
                                 New Analysis
-                            </Button>
-                            <Button
+                            </button>
+
+                            <button
                                 onClick={handleDownload}
                                 disabled={downloading}
-                                variant="primary"
-                                className="justify-center"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    padding: '11px 22px',
+                                    borderRadius: 12,
+                                    border: '1.5px solid #c73f14',
+                                    backgroundColor: '#e8572a',
+                                    color: '#fff',
+                                    fontFamily: 'DM Sans, sans-serif',
+                                    fontWeight: 600,
+                                    fontSize: '0.875rem',
+                                    cursor: downloading ? 'not-allowed' : 'pointer',
+                                    opacity: downloading ? 0.6 : 1,
+                                    transition: 'background 0.2s ease, box-shadow 0.2s ease',
+                                    letterSpacing: '0.01em',
+                                    boxShadow: '0 4px 20px rgba(232,87,42,0.30)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!downloading) {
+                                        const b = e.currentTarget as HTMLButtonElement;
+                                        b.style.backgroundColor = '#d14a20';
+                                        b.style.boxShadow = '0 8px 32px rgba(232,87,42,0.42)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    const b = e.currentTarget as HTMLButtonElement;
+                                    b.style.backgroundColor = '#e8572a';
+                                    b.style.boxShadow = '0 4px 20px rgba(232,87,42,0.30)';
+                                }}
                             >
-                                <Download size={18} />
-                                {downloading ? 'Preparing...' : 'Download PDF'}
-                            </Button>
+                                <Download size={15} />
+                                {downloading ? 'Preparing…' : 'Download PDF'}
+                            </button>
                         </div>
                     </div>
 
-                    {/* View Selector */}
-                    <Tabs
-                        value={view}
-                        onValueChange={(v) => setView(v as 'all' | 'insights' | 'plots')}
+                    {/* Tab switcher */}
+                    <div
+                        style={{
+                            display: 'inline-flex',
+                            gap: 2,
+                            padding: 5,
+                            borderRadius: 14,
+                            backgroundColor: 'rgba(255,255,255,0.07)',
+                            border: '1px solid rgba(255,255,255,0.10)',
+                        }}
                     >
-                        <TabsTrigger value="all">All</TabsTrigger>
-                        <TabsTrigger value="insights">Insights</TabsTrigger>
-                        <TabsTrigger value="plots">Charts</TabsTrigger>
-                    </Tabs>
+                        {tabs.map((t) => (
+                            <button
+                                key={t}
+                                onClick={() => setView(t)}
+                                style={{
+                                    padding: '8px 24px',
+                                    borderRadius: 10,
+                                    border: 'none',
+                                    fontFamily: 'DM Sans, sans-serif',
+                                    fontWeight: 600,
+                                    fontSize: '0.875rem',
+                                    textTransform: 'capitalize',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease',
+                                    backgroundColor: view === t ? '#fafaf8' : 'transparent',
+                                    color: view === t ? '#141412' : 'rgba(250,250,248,0.45)',
+                                    boxShadow: view === t ? '0 2px 8px rgba(0,0,0,0.18)' : 'none',
+                                    letterSpacing: '0.01em',
+                                }}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* Content Sections */}
-            <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-12">
-                {/* Dataset Summaries */}
-                {(view === 'all' || view === 'insights') && (
-                    <section className="space-y-8">
-                        <div className="space-y-6">
-                            {analysis.datasets.map((ds, idx) => (
-                                <div key={idx} className="bg-slate-900/35 border border-slate-800 rounded-2xl p-8">
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-200">
-                                            <FileText size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-2xl font-bold text-slate-100">{ds.filename}</h3>
-                                            <p className="text-xs text-slate-400 uppercase tracking-widest">Dataset Summary</p>
-                                        </div>
-                                    </div>
+            {/* ──────────── MAIN CONTENT ──────────── */}
+            <div
+                style={{
+                    maxWidth: 1360,
+                    margin: '0 auto',
+                    padding: '3.5rem 3rem 7rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4rem',
+                }}
+            >
+                {/* ── Dataset Summaries ── */}
+                {showInsights &&
+                    analysis.datasets.map((ds, idx) => (
+                        <section
+                            key={idx}
+                            style={{
+                                backgroundColor: '#fff',
+                                border: '1px solid #e4e3dd',
+                                borderRadius: 24,
+                                overflow: 'hidden',
+                                boxShadow: '0 2px 12px rgba(20,20,18,0.06)',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 16,
+                                    padding: '1.5rem 2.25rem',
+                                    borderBottom: '1px solid #e4e3dd',
+                                    backgroundColor: '#fafaf8',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 42,
+                                        height: 42,
+                                        borderRadius: 12,
+                                        backgroundColor: '#141412',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#fff',
+                                        flexShrink: 0,
+                                        boxShadow: '0 4px 12px rgba(20,20,18,0.18)',
+                                    }}
+                                >
+                                    <FileText size={18} />
+                                </div>
+                                <div>
+                                    <h3
+                                        style={{
+                                            fontFamily: 'DM Sans, sans-serif',
+                                            fontWeight: 600,
+                                            fontSize: '0.9375rem',
+                                            color: '#141412',
+                                            margin: 0,
+                                            letterSpacing: '0.005em',
+                                        }}
+                                    >
+                                        {ds.filename}
+                                    </h3>
+                                    <p
+                                        style={{
+                                            fontSize: '0.6rem',
+                                            fontWeight: 700,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.12em',
+                                            color: '#b8b7b0',
+                                            margin: '4px 0 0',
+                                        }}
+                                    >
+                                        Dataset Summary
+                                    </p>
+                                </div>
+                            </div>
 
-                                    {/* Executive Summary */}
-                                    <div className="mb-8 p-5 rounded-xl border border-slate-800 bg-slate-950/20" style={{ borderLeftColor: '#8b5cf6' }}>
-                                        <p className="text-base leading-relaxed text-slate-200">"{ds.executive_summary}"</p>
-                                    </div>
+                            <div style={{ padding: '2.25rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                <blockquote
+                                    style={{
+                                        margin: 0,
+                                        padding: '1.25rem 1.75rem',
+                                        backgroundColor: '#fef0eb',
+                                        borderLeft: '3px solid #e8572a',
+                                        borderRadius: '0 14px 14px 0',
+                                        fontSize: '0.9375rem',
+                                        fontStyle: 'italic',
+                                        fontWeight: 400,
+                                        color: '#3d3b35',
+                                        lineHeight: 1.8,
+                                        letterSpacing: '0.01em',
+                                    }}
+                                >
+                                    {ds.executive_summary}
+                                </blockquote>
 
-                                    {/* Core Metrics */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        {ds.core_metrics.map((metric, midx) => (
-                                            <div
-                                                key={midx}
-                                                className="p-5 bg-slate-950/10 border border-slate-800 rounded-xl"
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                                        gap: '1.125rem',
+                                    }}
+                                >
+                                    {ds.core_metrics.map((metric, midx) => (
+                                        <MetricCard
+                                            key={midx}
+                                            label={metric.label}
+                                            value={metric.value}
+                                            interpretation={metric.interpretation}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    ))}
+
+                {/* ── Key Insights ── */}
+                {showInsights && (
+                    <section style={{ display: 'flex', flexDirection: 'column', gap: '2.75rem' }}>
+                        <SectionHeader
+                            icon={<MessageSquare size={18} />}
+                            title="Key Insights"
+                            subtitle="AI-generated analysis across four intelligence layers"
+                        />
+
+                        {analysis.datasets.map((ds, dsIdx) =>
+                            insightSections.map(({ key }) => {
+                                const insights = (ds[key as keyof typeof ds] as Insight[]) ?? [];
+                                if (!insights.length) return null;
+                                const cfg = LAYER_CONFIG[key];
+
+                                return (
+                                    <div
+                                        key={`${dsIdx}-${key}`}
+                                        style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+                                    >
+                                        <div
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 10,
+                                                padding: '8px 16px',
+                                                borderRadius: 12,
+                                                backgroundColor: cfg.bg,
+                                                border: `1.5px solid ${cfg.border}40`,
+                                                width: 'fit-content',
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    fontFamily: 'Syne, sans-serif',
+                                                    fontWeight: 700,
+                                                    fontSize: '0.875rem',
+                                                    color: cfg.accent,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.07em',
+                                                }}
                                             >
-                                                <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">
-                                                    {metric.label}
-                                                </p>
-                                                <p className="text-3xl font-black text-purple-200 mb-2">{metric.value}</p>
-                                                <p className="text-xs text-slate-400 leading-relaxed">
-                                                    {metric.interpretation}
-                                                </p>
-                                            </div>
-                                        ))}
+                                                {cfg.label} Insights
+                                            </span>
+                                            <span
+                                                style={{
+                                                    display: 'inline-block',
+                                                    padding: '2px 10px',
+                                                    borderRadius: 999,
+                                                    fontSize: '0.6rem',
+                                                    fontWeight: 700,
+                                                    backgroundColor: `${cfg.barBg}20`,
+                                                    color: cfg.text,
+                                                }}
+                                            >
+                                                {insights.length}
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                                                gap: '1rem',
+                                            }}
+                                        >
+                                            {insights.map((insight, i) => (
+                                                <InsightCard key={i} insight={insight} />
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                );
+                            })
+                        )}
                     </section>
                 )}
 
-                {/* Insights Section */}
-                {(view === 'all' || view === 'insights') && (
-                    <section className="space-y-8">
-                        <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-200">
-                                <MessageSquare size={24} />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl md:text-3xl font-display font-bold text-slate-100">Key Insights</h2>
-                                <p className="text-sm text-slate-400">AI-Generated Analysis</p>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {analysis.datasets.flatMap(ds => [
-                                ...ds.descriptive,
-                                ...ds.diagnostic,
-                                ...ds.predictive,
-                                ...ds.business
-                            ]).map((insight, idx) => (
-                                <div key={idx}>
-                                    <InsightCard insight={insight} />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                {/* ── Charts & Visualizations ── */}
+                {showPlots && charts.length > 0 && (
+                    <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        <SectionHeader
+                            icon={<BarChart3 size={18} />}
+                            title="Charts & Visualizations"
+                            subtitle={`${charts.length} data visualizations generated`}
+                            iconBg="#e8572a"
+                        />
 
-                {/* Visualizations Section - Grid Layout */}
-                {(view === 'all' || view === 'plots') && charts.length > 0 && (
-                    <section className="space-y-8">
-                        <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-200">
-                                <BarChart3 size={24} />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl md:text-3xl font-display font-bold text-slate-100">Charts & Visualizations</h2>
-                                <p className="text-sm text-slate-400">{charts.length} Insights</p>
-                            </div>
-                        </div>
-
-                        {/* Charts Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))',
+                                gap: '1.375rem',
+                            }}
+                        >
                             {charts.map((chart, idx) => (
                                 <div
                                     key={idx}
-                                    className="bg-slate-900/35 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-600 transition-colors cursor-pointer flex flex-col h-full"
+                                    style={{
+                                        backgroundColor: '#fff',
+                                        border: '1px solid #e4e3dd',
+                                        borderRadius: 20,
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        boxShadow: '0 1px 4px rgba(20,20,18,0.06)',
+                                        transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        const el = e.currentTarget as HTMLDivElement;
+                                        el.style.transform = 'translateY(-4px)';
+                                        el.style.boxShadow = '0 16px 40px rgba(20,20,18,0.12)';
+                                        el.style.borderColor = 'rgba(232,87,42,0.30)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        const el = e.currentTarget as HTMLDivElement;
+                                        el.style.transform = 'translateY(0)';
+                                        el.style.boxShadow = '0 1px 4px rgba(20,20,18,0.06)';
+                                        el.style.borderColor = '#e4e3dd';
+                                    }}
                                 >
-                                    {/* Card Header */}
-                                    <div className="p-4 border-b border-slate-800 bg-slate-950/10">
-                                        <h3 className="text-base font-bold text-slate-100 mb-1 truncate">{chart.title}</h3>
-                                        <p className="text-xs text-cyan-300 font-semibold uppercase tracking-wider">
-                                            {chart.plot_type.replace(/_/g, ' ')}
-                                        </p>
-                                    </div>
-
-                                    {/* Chart Image */}
-                                    <div className="relative flex-1 p-4 bg-slate-950/10 overflow-hidden flex items-center justify-center min-h-64">
-                                        <img
-                                            src={chart.image_url}
-                                            alt={chart.title}
-                                            className="max-w-full h-auto max-h-64 object-contain"
+                                    <div
+                                        style={{
+                                            padding: '1.125rem 1.375rem',
+                                            borderBottom: '1px solid #e4e3dd',
+                                            backgroundColor: '#fafaf8',
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            justifyContent: 'space-between',
+                                            gap: 12,
+                                        }}
+                                    >
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <h3
+                                                style={{
+                                                    fontFamily: 'DM Sans, sans-serif',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.9rem',
+                                                    color: '#141412',
+                                                    margin: '0 0 7px',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    letterSpacing: '0.005em',
+                                                    lineHeight: 1.4,
+                                                }}
+                                            >
+                                                {chart.title}
+                                            </h3>
+                                            <span
+                                                style={{
+                                                    display: 'inline-block',
+                                                    padding: '3px 10px',
+                                                    borderRadius: 999,
+                                                    fontSize: '0.6rem',
+                                                    fontWeight: 700,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.1em',
+                                                    backgroundColor: '#fef0eb',
+                                                    color: '#c73f14',
+                                                    border: '1px solid rgba(232,87,42,0.20)',
+                                                }}
+                                            >
+                                                {chart.plot_type.replace(/_/g, ' ')}
+                                            </span>
+                                        </div>
+                                        <ArrowUpRight
+                                            size={15}
+                                            style={{ color: '#c8c7c0', flexShrink: 0, marginTop: 2 }}
                                         />
                                     </div>
 
-                                    {/* Quick Actions */}
-                                    <div className="p-4 border-t border-slate-800 bg-slate-950/10 flex gap-2">
-                                        <Button
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '1.5rem',
+                                            backgroundColor: '#fff',
+                                            minHeight: 210,
+                                        }}
+                                    >
+                                        <img
+                                            src={chart.image_url}
+                                            alt={chart.title}
+                                            style={{
+                                                maxWidth: '100%',
+                                                height: 'auto',
+                                                maxHeight: 210,
+                                                objectFit: 'contain',
+                                                borderRadius: 8,
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: 8,
+                                            padding: '1rem 1.375rem',
+                                            borderTop: '1px solid #e4e3dd',
+                                            backgroundColor: '#fafaf8',
+                                        }}
+                                    >
+                                        <button
                                             onClick={() => setZoomedChart(chart)}
-                                            variant="outline"
-                                            size="sm"
-                                            className="flex-1 justify-center"
+                                            style={{
+                                                flex: 1,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 7,
+                                                padding: '9px 0',
+                                                borderRadius: 10,
+                                                border: '1.5px solid #d4d3cc',
+                                                backgroundColor: 'transparent',
+                                                fontFamily: 'DM Sans, sans-serif',
+                                                fontWeight: 600,
+                                                fontSize: '0.8125rem',
+                                                color: '#3d3b35',
+                                                cursor: 'pointer',
+                                                transition: 'background 0.18s ease, border-color 0.18s ease',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                const b = e.currentTarget as HTMLButtonElement;
+                                                b.style.backgroundColor = '#f0efe9';
+                                                b.style.borderColor = '#b8b7b0';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const b = e.currentTarget as HTMLButtonElement;
+                                                b.style.backgroundColor = 'transparent';
+                                                b.style.borderColor = '#d4d3cc';
+                                            }}
                                         >
-                                            <ZoomIn size={16} />
+                                            <ZoomIn size={13} />
                                             Zoom
-                                        </Button>
-                                        <Button
+                                        </button>
+
+                                        <button
                                             onClick={() => handleAskAI(chart)}
-                                            variant="primary"
-                                            size="sm"
-                                            className="flex-1 justify-center"
+                                            style={{
+                                                flex: 1,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 7,
+                                                padding: '9px 0',
+                                                borderRadius: 10,
+                                                border: '1.5px solid #c73f14',
+                                                backgroundColor: '#e8572a',
+                                                fontFamily: 'DM Sans, sans-serif',
+                                                fontWeight: 600,
+                                                fontSize: '0.8125rem',
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                transition: 'background 0.18s ease, box-shadow 0.18s ease',
+                                                boxShadow: '0 2px 10px rgba(232,87,42,0.25)',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                const b = e.currentTarget as HTMLButtonElement;
+                                                b.style.backgroundColor = '#d14a20';
+                                                b.style.boxShadow = '0 4px 16px rgba(232,87,42,0.38)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const b = e.currentTarget as HTMLButtonElement;
+                                                b.style.backgroundColor = '#e8572a';
+                                                b.style.boxShadow = '0 2px 10px rgba(232,87,42,0.25)';
+                                            }}
                                         >
-                                            <MessageCircle size={16} />
+                                            <MessageCircle size={13} />
                                             Ask AI
-                                        </Button>
+                                        </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </section>
                 )}
-
             </div>
 
-            {/* Zoom Modal */}
             {zoomedChart && (
                 <ZoomModal
                     chart={zoomedChart}

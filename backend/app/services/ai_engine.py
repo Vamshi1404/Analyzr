@@ -140,7 +140,7 @@ async def interpret_dataset(
 
 
 async def get_proactive_opener(session_summary: str) -> str:
-    """Generate Aria's unsolicited opening message for the chat bubble."""
+    """Generate Leela's unsolicited opening message for the chat bubble."""
     prompt = build_proactive_opener_prompt(session_summary)
     raw    = await _call_ollama_async(prompt, num_predict=300, temperature=0.6)
     if raw.startswith("__OLLAMA"):
@@ -152,7 +152,7 @@ async def chat_with_context(prompt: str) -> str:
     """Send a full chat prompt (already built by context_builder) to Ollama."""
     raw = await _call_ollama_async(prompt, num_predict=800, temperature=0.5)
     if raw.startswith("__OLLAMA_ERROR__"):
-        return f"Aria is temporarily unavailable. Please ensure Ollama is running with the '{OLLAMA_MODEL}' model."
+        return f"Leela is temporarily unavailable. Please ensure Ollama is running with the '{OLLAMA_MODEL}' model."
     if raw.startswith("__OLLAMA_TIMEOUT__"):
         return "That question required more context than I could process in time. Try asking something more specific."
     return raw
