@@ -89,23 +89,6 @@ export default function UploadPage({ onPhaseChange, onComplete }: Props) {
                 position: 'relative', zIndex: 1,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,
             }}>
-                {/* Badge */}
-                <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    padding: '5px 14px', borderRadius: 999,
-                    backgroundColor: 'rgba(232,87,42,0.15)',
-                    border: '1px solid rgba(232,87,42,0.30)',
-                }}>
-                    <Sparkles size={11} color="#e8572a" />
-                    <span style={{
-                        fontSize: '0.6875rem', fontWeight: 700,
-                        textTransform: 'uppercase', letterSpacing: '0.12em',
-                        color: '#e8572a',
-                    }}>
-                        AI Intelligence Engine
-                    </span>
-                </div>
-
                 <h1 style={{
                     fontFamily: 'Syne, sans-serif',
                     fontWeight: 700,
