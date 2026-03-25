@@ -694,18 +694,6 @@ export default function ResultsPage({
                                     width: 'fit-content',
                                 }}
                             >
-                                <Sparkles size={11} color="#e8572a" />
-                                <span
-                                    style={{
-                                        fontSize: '0.6rem',
-                                        fontWeight: 700,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.14em',
-                                        color: '#e8572a',
-                                    }}
-                                >
-                                    Analysis Complete
-                                </span>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

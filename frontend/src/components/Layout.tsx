@@ -80,26 +80,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Right side pill */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '5px 12px',
-            borderRadius: 999,
-            backgroundColor: '#fafaf8',
-            border: '1px solid #e4e3dd',
-          }}>
-            <Sparkles size={12} style={{ color: '#e8572a' }} />
-            <span style={{
-              fontSize: '0.75rem',
-              fontWeight: 500,
-              color: '#9a9891',
-              letterSpacing: '0.02em',
-              whiteSpace: 'nowrap',
-            }}>
-              Powered by AI Intelligence Engine
-            </span>
-          </div>
+         
 
         </div>
       </header>
@@ -122,17 +103,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             justifyContent: 'space-between',
             gap: 16,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Sparkles size={12} style={{ color: '#e8572a' }} />
-              <span style={{
-                fontSize: '0.75rem',
-                fontWeight: 400,
-                color: '#b8b7b0',
-                letterSpacing: '0.02em',
-              }}>
-                Powered by AI Intelligence Engine
-              </span>
-            </div>
+            
             <p style={{
               fontSize: '0.75rem',
               fontWeight: 400,
