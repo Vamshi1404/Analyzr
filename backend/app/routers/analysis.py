@@ -80,6 +80,7 @@ async def run_analysis(session_id: str):
         # ── Step 4: Build partial DatasetAnalysis for narrative generation ─
         da = DatasetAnalysis(
             filename=filename,
+            columns=df.columns.tolist(),
             descriptive=descriptive,
             diagnostic=diagnostic,
             predictive=predictive,

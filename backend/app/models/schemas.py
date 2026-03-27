@@ -55,6 +55,7 @@ class DatasetAnalysis(BaseModel):
     core_metrics: list[dict[str, Any]] = []  # AI-selected dashboard metrics
     executive_summary: str
     recommendations: list[str]
+    columns: list[str] = []
 
 
 class AnalysisResponse(BaseModel):
@@ -107,3 +108,16 @@ class ReportRequest(BaseModel):
     session_id: str
     format: str = "pdf"          # pdf | docx | json
     report_type: str = "executive"  # executive | technical | audit
+
+# ─── Playground ────────────────────────────────────────────────────────────────
+
+class PlaygroundRequest(BaseModel):
+    session_id: str
+    dataset: str
+    columns: list[str]
+    prompt: str
+
+class PlaygroundResponse(BaseModel):
+    chart: ChartMetadata | None
+    insights: list[Insight]
+    summary: str = ""

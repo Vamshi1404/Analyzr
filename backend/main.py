@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
-from app.routers import upload, analysis, chat, report, visualizations
+from app.routers import upload, analysis, chat, report, visualizations, playground
 
 load_dotenv()
 
@@ -34,6 +34,7 @@ app.include_router(analysis.router, prefix="/api", tags=["Analysis"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
 app.include_router(report.router, prefix="/api", tags=["Report"])
 app.include_router(visualizations.router, prefix="/api", tags=["Visualizations"])
+app.include_router(playground.router, prefix="/api", tags=["Playground"])
 
 
 @app.get("/", tags=["Health"])

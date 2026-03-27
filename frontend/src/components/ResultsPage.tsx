@@ -15,7 +15,7 @@ import {
     ArrowUpRight,
     Rocket,
 } from 'lucide-react';
-import type { AnalysisResponse, Insight, ChartMetadata } from '../lib/types';
+import type { AnalysisResponse, Insight, ChartMetadata, PlaygroundResponse } from '../lib/types';
 
 /* ─────────────────────────────────────────────────────────────
    LAYER CONFIG
@@ -129,7 +129,7 @@ function InsightCard({ insight }: { insight: Insight }) {
             >
                 <p
                     style={{
-                        fontSize: '0.9rem',
+                        fontSize: '0.96rem',
                         fontWeight: 400,
                         lineHeight: 1.7,
                         color: cfg.accent,
@@ -351,7 +351,7 @@ function ZoomModal({
                                         display: 'flex',
                                         gap: 12,
                                         alignItems: 'flex-start',
-                                        fontSize: '0.9rem',
+                                        fontSize: '0.96rem',
                                         fontWeight: 400,
                                         color: '#3d3b35',
                                         lineHeight: 1.7,
@@ -474,7 +474,7 @@ function MetricCard({
             </p>
             <p
                 style={{
-                    fontSize: '0.875rem',
+                    fontSize: '0.96rem',
                     fontWeight: 400,
                     color: '#6b6965',
                     lineHeight: 1.7,
@@ -539,7 +539,7 @@ function SectionHeader({
                 {subtitle && (
                     <p
                         style={{
-                            fontSize: '0.875rem',
+                            fontSize: '0.96rem',
                             color: '#7a7975',
                             margin: '4px 0 0',
                             lineHeight: 1.55,
@@ -572,8 +572,34 @@ export default function ResultsPage({
     onAskAI: (prompt: string) => void;
 }) {
     const [downloading, setDownloading] = useState(false);
-    const [view, setView] = useState<'all' | 'insights' | 'plots'>('all');
+    const [view, setView] = useState<'all' | 'insights' | 'plots' | 'playground'>('all');
     const [zoomedChart, setZoomedChart] = useState<ChartMetadata | null>(null);
+
+    // Playground State
+    const [playgroundDataset, setPlaygroundDataset] = useState<string>(analysis.datasets[0]?.filename || '');
+    const [playgroundColumns, setPlaygroundColumns] = useState<string[]>([]);
+    const [playgroundPrompt, setPlaygroundPrompt] = useState('');
+    const [playgroundLoading, setPlaygroundLoading] = useState(false);
+    const [playgroundResults, setPlaygroundResults] = useState<PlaygroundResponse[]>([]);
+
+    const handlePlaygroundSubmit = async () => {
+        if (!playgroundPrompt.trim() || playgroundColumns.length === 0) return;
+        setPlaygroundLoading(true);
+        try {
+            const { runPlayground } = await import('../lib/api');
+            const res = await runPlayground({
+                session_id: sessionId,
+                dataset: playgroundDataset,
+                columns: playgroundColumns,
+                prompt: playgroundPrompt
+            });
+            setPlaygroundResults(prev => [res, ...prev]);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setPlaygroundLoading(false);
+        }
+    };
 
     const handleDownload = async () => {
         setDownloading(true);
@@ -623,7 +649,8 @@ export default function ResultsPage({
 
     const showInsights = view === 'all' || view === 'insights';
     const showPlots = view === 'all' || view === 'plots';
-    const tabs = ['all', 'insights', 'plots'] as const;
+    const showPlayground = view === 'playground';
+    const tabs = ['all', 'insights', 'plots', 'playground'] as const;
 
     return (
         <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#f5f4f0' }}>
@@ -876,8 +903,14 @@ export default function ResultsPage({
                 }}
             >
                 {/* ── Dataset Summaries ── */}
-                {showInsights &&
-                    analysis.datasets.map((ds, idx) => (
+                {showInsights && (
+                    <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        <SectionHeader
+                            icon={<FileText size={18} />}
+                            title="Summary"
+                            subtitle="Executive Overview of Uploaded Datasets"
+                        />
+                        {analysis.datasets.map((ds, idx) => (
                         <section
                             key={idx}
                             style={{
@@ -950,7 +983,7 @@ export default function ResultsPage({
                                         backgroundColor: '#fef0eb',
                                         borderLeft: '3px solid #e8572a',
                                         borderRadius: '0 14px 14px 0',
-                                        fontSize: '0.9375rem',
+                                        fontSize: '1.05rem',
                                         fontStyle: 'italic',
                                         fontWeight: 400,
                                         color: '#3d3b35',
@@ -972,7 +1005,7 @@ export default function ResultsPage({
                                         <MetricCard
                                             key={midx}
                                             label={metric.label}
-                                            value={metric.value}
+                                            value={String(metric.value)}
                                             interpretation={metric.interpretation}
                                         />
                                     ))}
@@ -980,6 +1013,8 @@ export default function ResultsPage({
                             </div>
                         </section>
                     ))}
+                    </section>
+                )}
 
                 {/* ── Key Insights ── */}
                 {showInsights && (
@@ -1256,6 +1291,164 @@ export default function ResultsPage({
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* ── Playground ── */}
+                {showPlayground && (
+                    <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        <SectionHeader
+                            icon={<Sparkles size={18} />}
+                            title="AI Playground"
+                            subtitle="Select columns and guide the AI to generate custom insights and plots"
+                            iconBg="#7c3aed"
+                        />
+
+                        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                            {/* Controls */}
+                            <div style={{ flex: '1 1 300px', backgroundColor: '#fff', borderRadius: 20, padding: '1.5rem', border: '1px solid #e4e3dd', boxShadow: '0 2px 12px rgba(20,20,18,0.06)' }}>
+                                <h3 style={{ margin: '0 0 1.25rem', fontSize: '1.05rem', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>Configuration</h3>
+                                
+                                {analysis.datasets.length > 1 && (
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b6965', marginBottom: 8 }}>Select Dataset:</label>
+                                        <select 
+                                            value={playgroundDataset}
+                                            onChange={e => {
+                                                setPlaygroundDataset(e.target.value);
+                                                setPlaygroundColumns([]);
+                                            }}
+                                            style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid #d4d3cc', fontFamily: 'DM Sans, sans-serif' }}
+                                        >
+                                            {analysis.datasets.map(ds => (
+                                                <option key={ds.filename} value={ds.filename}>{ds.filename}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b6965', marginBottom: 8 }}>Select Columns :</label>
+                                    <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e4e3dd', borderRadius: 10, padding: '10px', backgroundColor: '#fafaf8' }}>
+                                        {analysis.datasets.find(d => d.filename === playgroundDataset)?.columns?.map(col => (
+                                            <label key={col} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', fontSize: '0.875rem', cursor: 'pointer' }}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={playgroundColumns.includes(col)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) setPlaygroundColumns(prev => [...prev, col]);
+                                                        else setPlaygroundColumns(prev => prev.filter(c => c !== col));
+                                                    }}
+                                                    style={{ width: 16, height: 16, accentColor: '#e8572a' }}
+                                                />
+                                                <span style={{ color: '#3d3b35' }}>{col}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <p style={{ fontSize: '0.7rem', color: '#8a8880', marginTop: 6 }}>Select the features to analyse</p>
+                                </div>
+
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b6965', marginBottom: 8 }}>Your Prompt:</label>
+                                    <textarea 
+                                        value={playgroundPrompt}
+                                        onChange={e => setPlaygroundPrompt(e.target.value)}
+                                        placeholder="E.g., Show me the relationship between these columns and indicate any anomalies."
+                                        style={{ width: '100%', padding: '14px', borderRadius: 10, border: '1px solid #d4d3cc', minHeight: 120, fontSize: '0.96rem', fontFamily: 'DM Sans, sans-serif', resize: 'vertical' }}
+                                    />
+                                </div>
+
+                                <button 
+                                    onClick={handlePlaygroundSubmit}
+                                    disabled={playgroundLoading || !playgroundPrompt.trim() || playgroundColumns.length === 0}
+                                    className="btn-accent"
+                                    style={{ 
+                                        width: '100%', 
+                                        padding: '12px', 
+                                        justifyContent: 'center', 
+                                        opacity: (playgroundLoading || !playgroundPrompt.trim() || playgroundColumns.length === 0) ? 0.6 : 1,
+                                        cursor: (playgroundLoading || !playgroundPrompt.trim() || playgroundColumns.length === 0) ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    <Sparkles size={16} />
+                                    {playgroundLoading ? 'Generating...' : 'Analyze & Generate Plot'}
+                                </button>
+                            </div>
+
+                            {/* Result Area */}
+                            <div style={{ flex: '2 1 500px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                {playgroundLoading && (
+                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', borderRadius: 20, border: '1px solid #e4e3dd', minHeight: 180 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                                            <div className="custom-loader" style={{ width: 30, height: 30, border: '3px solid #f3f3f3', borderTop: '3px solid #e8572a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                                            <p style={{ color: '#8a8880', fontSize: '0.9rem', fontFamily: 'DM Sans, sans-serif' }}>AI is analyzing your request...</p>
+                                            <style>{`
+                                                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                                            `}</style>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {playgroundResults.map((res, idx) => (
+                                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '2.5rem', borderBottom: idx < playgroundResults.length - 1 ? '1px dashed #d4d3cc' : 'none' }}>
+                                        {res.chart && (
+                                            <div style={{ backgroundColor: '#fff', borderRadius: 20, border: '1px solid #e4e3dd', overflow: 'hidden', boxShadow: '0 2px 12px rgba(20,20,18,0.04)' }}>
+                                              <div style={{ padding: '1.5rem 2rem', backgroundColor: '#fafaf8', borderBottom: '1px solid #e4e3dd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div>
+                                                    <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>{res.chart.title}</h3>
+                                                    <span style={{ fontSize: '0.65rem', padding: '4px 12px', background: '#fef0eb', color: '#c73f14', borderRadius: 999, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', border: '1px solid rgba(232,87,42,0.2)' }}>
+                                                        {res.chart.plot_type.replace(/_/g, ' ')}
+                                                    </span>
+                                                </div>
+                                              </div>
+                                              <div style={{ padding: '2.5rem', display: 'flex', justifyContent: 'center', backgroundColor: '#fff' }}>
+                                                  <img src={res.chart.image_url} alt={res.chart.title} style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid #e4e3dd', boxShadow: '0 4px 16px rgba(20,20,18,0.06)' }} />
+                                              </div>
+                                              
+                                              {res.chart.key_observations && res.chart.key_observations.length > 0 && (
+                                                  <div style={{ padding: '1.5rem 2rem', borderTop: '1px solid #e4e3dd' }}>
+                                                      <h4 style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: '#b8b7b0', letterSpacing: '0.12em', margin: '0 0 12px' }}>Observations</h4>
+                                                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                          {res.chart.key_observations.map((obs, j) => (
+                                                              <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: '0.96rem', color: '#3d3b35', lineHeight: 1.6 }}>
+                                                                  <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#e8572a', flexShrink: 0, marginTop: 7 }} />
+                                                                  {obs}
+                                                              </li>
+                                                          ))}
+                                                      </ul>
+                                                  </div>
+                                              )}
+                                              
+                                              <div style={{ padding: '1.25rem 2rem', borderTop: '1px solid #e4e3dd', background: '#fafaf8', display: 'flex', justifyContent: 'flex-end' }}>
+                                                  <button className="btn-accent" onClick={() => handleAskAI(res.chart!)} style={{ padding: '9px 20px' }}>
+                                                      <MessageCircle size={14} /> Ask AI
+                                                  </button>
+                                              </div>
+                                            </div>
+                                        )}
+                                        
+                                        {res.summary && (
+                                            <div style={{ backgroundColor: '#fff', padding: '1.5rem 2rem', borderRadius: 20, border: '1px solid #e4e3dd', boxShadow: '0 2px 12px rgba(20,20,18,0.04)', marginBottom: '0.5rem' }}>
+                                                <h3 style={{ margin: '0 0 10px', fontSize: '1.05rem', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>Analysis Summary</h3>
+                                                <p style={{ fontSize: '0.96rem', color: '#3d3b35', lineHeight: 1.6, margin: 0 }}>{res.summary}</p>
+                                            </div>
+                                        )}
+                                        
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+                                            {res.insights.map((insight, i) => (
+                                                <InsightCard key={i} insight={insight} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {!playgroundLoading && playgroundResults.length === 0 && (
+                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fafaf8', borderRadius: 20, border: '1px dashed #d4d3cc', minHeight: 300 }}>
+                                        <p style={{ color: '#8a8880', fontSize: '0.95rem', fontFamily: 'DM Sans, sans-serif' }}>Select columns and provide a prompt to start analysing.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </section>
                 )}
