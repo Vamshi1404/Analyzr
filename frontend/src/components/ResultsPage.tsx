@@ -1331,7 +1331,9 @@ export default function ResultsPage({
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#6b6965', marginBottom: 8 }}>Select Columns :</label>
                                     <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e4e3dd', borderRadius: 10, padding: '10px', backgroundColor: '#fafaf8' }}>
-                                        {analysis.datasets.find(d => d.filename === playgroundDataset)?.columns?.map(col => (
+                                        {analysis.datasets.find(d => d.filename === playgroundDataset)?.columns
+                                            ?.filter(col => !col.toLowerCase().match(/^(id|sno|s\.no|serial\s*no|index|uuid|_id|rowid)$/i) && !col.toLowerCase().includes('id_') && !col.toLowerCase().endsWith('_id'))
+                                            ?.map(col => (
                                             <label key={col} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', fontSize: '0.875rem', cursor: 'pointer' }}>
                                                 <input 
                                                     type="checkbox" 

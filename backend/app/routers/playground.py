@@ -19,12 +19,13 @@ router = APIRouter()
 
 async def get_plot_config(columns: list[str], prompt: str) -> dict:
     sys_prompt = f"""
-You are an expert data visualization AI. The user has selected the following columns from their dataset: {columns}.
+You are an expert data visualization and advanced analytics AI. 
+The user has selected the following columns from their dataset: {columns}.
 The user has provided this request/prompt: "{prompt}"
 
 Determine the best chart type to visualize this request among: scatter_plot, bar_chart, line_chart, histogram, box_plot, pie_chart, violin_plot, heatmap.
 Also pick the exact column names for x_axis and y_axis from the provided columns. If a chart type only needs one axis (like histogram or pie_chart), use it for x_axis and leave y_axis empty. If using heatmap, x_axis and y_axis can be empty.
-Write a concise but descriptive title. Generate 2 short key observations that a data analyst would likely make.
+Write a concise but descriptive title. Generate 3-5 highly detailed key observations that a Senior Data Analyst would likely make.
 
 Output a SINGLE valid JSON object and NOTHING else. Your response will be passed directly to a JSON parser:
 Output a SINGLE valid JSON object and NOTHING else. Your response will be passed directly to a JSON parser:
@@ -33,18 +34,18 @@ Output a SINGLE valid JSON object and NOTHING else. Your response will be passed
     "x_axis": "...",
     "y_axis": "...",
     "title": "...",
-    "observations": ["obs 1", "obs 2"],
-    "summary": "A 2-3 sentence executive summary of the relationship and findings.",
+    "observations": ["detailed obs 1", "detailed obs 2", "detailed obs 3"],
+    "summary": "A comprehensive 4-6 sentence executive summary of the relationship, findings, anomalies, and business implications.",
     "deep_stats": [
         {{
             "metric": "Metric name",
-            "stat_value": "Statistical finding",
-            "interpretation": "Business meaning"
+            "stat_value": "Detailed statistical finding",
+            "interpretation": "In-depth business meaning and recommended action"
         }}
     ]
 }}
     """
-    raw = await _call_ollama_async(sys_prompt, num_predict=500, temperature=0.2)
+    raw = await _call_ollama_async(sys_prompt, num_predict=1500, temperature=0.3)
     print(f"\n[PLAYGROUND API] Raw LLM reply:\n{raw}\n", flush=True)
     parsed = _parse_json(raw)
     if isinstance(parsed, dict) and "plot_type" in parsed:

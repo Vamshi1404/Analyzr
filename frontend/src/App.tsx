@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ResultsPage from './components/ResultsPage';
 import LoadingScreen from './components/LoadingScreen';
@@ -20,7 +20,23 @@ export default function App() {
   const [charts, setCharts] = useState<ChartMetadata[]>([]);
   const [chatPrompt, setChatPrompt] = useState<string | null>(null);
 
+  useEffect(() => {
+    const saved = localStorage.getItem('analyzr_session');
+    if (saved && appState === 'upload') {
+      handleStart(saved, 'analyzing');
+      import('./lib/api').then(({ runAnalysis }) => {
+        runAnalysis(saved)
+          .then(res => handleAnalysisDone(saved, res))
+          .catch(() => {
+            localStorage.removeItem('analyzr_session');
+            handleReset();
+          });
+      });
+    }
+  }, []);
+
   async function handleStart(sid: string, phase: LoadPhase) {
+    localStorage.setItem('analyzr_session', sid);
     setSessionId(sid);
     setLoadPhase(phase);
     setAppState('loading');
@@ -41,6 +57,7 @@ export default function App() {
   }
 
   function handleReset() {
+    localStorage.removeItem('analyzr_session');
     setAppState('upload');
     setLoadPhase('uploading');
     setSessionId(null);
