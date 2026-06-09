@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Upload, FileText, X, Play, ArrowRight, Sparkles, Database } from 'lucide-react';
+import { Upload, FileText, X, Play, ArrowRight, Database } from 'lucide-react';
 import { uploadFiles, runAnalysis } from '../lib/api';
 import { saveSession } from '../lib/sessionStore';
 import type { AnalysisResponse } from '../lib/types';

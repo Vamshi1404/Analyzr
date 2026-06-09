@@ -31,6 +31,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+# but keep examples and production placeholders
+!.env.example
+!frontend/.env.production
+!frontend/.env.development
 
 # Node.js
 node_modules/

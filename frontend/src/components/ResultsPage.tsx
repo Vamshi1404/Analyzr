@@ -16,6 +16,7 @@ import {
     Rocket,
 } from 'lucide-react';
 import type { AnalysisResponse, Insight, ChartMetadata, PlaygroundResponse } from '../lib/types';
+import { assetUrl } from '../lib/api';
 
 /* ─────────────────────────────────────────────────────────────
    LAYER CONFIG
@@ -317,7 +318,7 @@ function ZoomModal({
                     }}
                 >
                     <img
-                        src={chart.image_url}
+                        src={assetUrl(chart.image_url)}
                         alt={chart.title}
                         style={{
                             maxWidth: '100%',
@@ -1199,7 +1200,7 @@ export default function ResultsPage({
                                         }}
                                     >
                                         <img
-                                            src={chart.image_url}
+                                            src={assetUrl(chart.image_url)}
                                             alt={chart.title}
                                             style={{
                                                 maxWidth: '100%',
@@ -1405,7 +1406,7 @@ export default function ResultsPage({
                                                 </div>
                                               </div>
                                               <div style={{ padding: '2.5rem', display: 'flex', justifyContent: 'center', backgroundColor: '#fff' }}>
-                                                  <img src={res.chart.image_url} alt={res.chart.title} style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid #e4e3dd', boxShadow: '0 4px 16px rgba(20,20,18,0.06)' }} />
+                                                  <img src={assetUrl(res.chart.image_url)} alt={res.chart.title} style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid #e4e3dd', boxShadow: '0 4px 16px rgba(20,20,18,0.06)' }} />
                                               </div>
                                               
                                               {res.chart.key_observations && res.chart.key_observations.length > 0 && (

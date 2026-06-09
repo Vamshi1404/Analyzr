@@ -1,5 +1,4 @@
 import { useLocation } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
