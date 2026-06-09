@@ -35,7 +35,7 @@ fastapi==0.131.0
     # via analyzr-backend
 fonttools==4.61.1
     # via matplotlib
-groq==0.9.0
+groq==1.4.0
     # via analyzr-backend
 h11==0.16.0
     # via
