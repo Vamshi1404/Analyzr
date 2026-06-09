@@ -12,7 +12,7 @@ import seaborn as sns
 
 from app.models.schemas import PlaygroundRequest, PlaygroundResponse, ChartMetadata, Insight
 from app.utils.session_store import get_session
-from app.services.ai_engine import _call_ollama_async, _parse_json
+from app.services.ai_engine import _call_groq, _parse_json
 from app.services.visualization import VIBRANT_PALETTE
 
 router = APIRouter()
@@ -45,7 +45,7 @@ Output a SINGLE valid JSON object and NOTHING else. Your response will be passed
     ]
 }}
     """
-    raw = await _call_ollama_async(sys_prompt, num_predict=1500, temperature=0.3)
+    raw = await _call_groq(sys_prompt, max_tokens=1500, temperature=0.3)
     print(f"\n[PLAYGROUND API] Raw LLM reply:\n{raw}\n", flush=True)
     parsed = _parse_json(raw)
     if isinstance(parsed, dict) and "plot_type" in parsed:

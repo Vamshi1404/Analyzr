@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from typing import Dict, List
-from app.services.ai_engine import _call_ollama_async, _parse_json
+from app.services.ai_engine import _call_groq, _parse_json
 
 # Semantic Roles
 # ID: Unique identifier, skip statistics
@@ -42,9 +42,9 @@ async def classify_columns_semantically(columns: List[Dict]) -> Dict[str, str]:
         cols_text += f"- {col['name']} (Samples: {', '.join(map(str, col['samples']))})\n"
 
     prompt = PROMPT_TEMPLATE.format(columns_block=cols_text)
-    raw = await _call_ollama_async(prompt, num_predict=1024, temperature=0.1)
+    raw = await _call_groq(prompt, max_tokens=1024, temperature=0.1)
     
-    if raw.startswith("__OLLAMA"):
+    if raw.startswith("__GROQ"):
         return {}
 
     parsed = _parse_json(raw)
