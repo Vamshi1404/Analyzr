@@ -9,11 +9,19 @@ import type {
     PlaygroundResponse,
 } from './types';
 
-const BASE = `${import.meta.env.VITE_API_URL ?? ''}/api`;
+function normalizeApiUrl(raw: string | undefined): string {
+    const url = (raw ?? '').trim().replace(/\/+$/, '');
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL);
+const BASE = `${API_URL}/api`;
 
 /** Prefix /static/... paths with the backend base URL in production */
 export const assetUrl = (path: string) =>
-    `${import.meta.env.VITE_API_URL ?? ''}${path}`;
+    `${API_URL}${path}`;
 
 // ── Upload ────────────────────────────────────────────────────────────────────
 export async function uploadFiles(files: File[]): Promise<UploadResponse> {
