@@ -14,13 +14,14 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# CORS – allow React dev server and production frontend
+# CORS – allow React dev server, production frontend, and Vercel preview deploys
 _raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
 _allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

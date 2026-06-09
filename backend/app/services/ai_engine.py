@@ -16,14 +16,28 @@ from app.services.context_builder import (
 GROQ_MODEL   = os.getenv("GROQ_MODEL", "mixtral-8x7b-32768")
 GROQ_TIMEOUT = int(os.getenv("GROQ_TIMEOUT", "60"))
 
-_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=GROQ_TIMEOUT)
+_client: Groq | None = None
+
+
+def _get_client() -> Groq | None:
+    global _client
+    if _client is not None:
+        return _client
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return None
+    _client = Groq(api_key=api_key, timeout=GROQ_TIMEOUT)
+    return _client
 
 
 async def _call_groq(prompt: str, max_tokens: int = 1024, temperature: float = 0.4) -> str:
     """Call Groq API (synchronous SDK wrapped for use in async context)."""
+    client = _get_client()
+    if client is None:
+        return "__GROQ_ERROR__: GROQ_API_KEY is not set"
     print(f"      [GROQ] Querying {GROQ_MODEL}...")
     try:
-        response = _client.chat.completions.create(
+        response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=max_tokens,

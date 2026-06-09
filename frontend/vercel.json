@@ -1,7 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://analyzr-production.up.railway.app/api/:path*" },
-    { "source": "/static/:path*", "destination": "https://analyzr-production.up.railway.app/static/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
